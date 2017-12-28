@@ -6,18 +6,19 @@ import stat
 
 from subprocess import call
 
-
 PATH = os.path.dirname(os.path.realpath(__file__))
-PASS_HOME = '/home/kevin/Develop/ProtocolEx/cmake-build-debug'
+PASSLIB_HOME = '/home/kevin/Develop/ProtocolEx/cmake-build-debug/lib'
 
 PASS = {
-    'sys-call-counter': PASS_HOME + '/lib/SysLibCounter/libSysLibCounterPass.so',
-    'global-identify-struct': PASS_HOME + '/lib/Global-Structure/libGlobalSTPass.so'
+    'sys-call-counter': PASSLIB_HOME + '/SysLibCounter/libSysLibCounterPass.so',
+    'global-identify-struct': PASSLIB_HOME + '/Global-Structure/libGlobalSTPass.so',
+    'loop-counter': PASSLIB_HOME + '/LoopCounter/libLoopCounterPass.so',
 }
 
 PARAMS = {
     'sys-call-counter': '-Count-System-Call',
-    'global-identify-struct': '-global-identify-struct'
+    'global-identify-struct': '-global-identify-struct',
+    'loop-counter': '-Loop-Count',
 }
 
 
