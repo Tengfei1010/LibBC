@@ -82,6 +82,7 @@ def statistics(file_names):
 def main():
     clean()
     count()
+    # clean()
 
 
 if __name__ == '__main__':
