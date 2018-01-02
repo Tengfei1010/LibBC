@@ -1,0 +1,6 @@
+recv
+recvfrom
+recvmsg
+read
+usb_bulk_read
+pn53x_TgInitAsTarget

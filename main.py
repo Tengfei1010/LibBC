@@ -7,19 +7,42 @@ import stat
 from subprocess import call
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-PASSLIB_HOME = '/home/kevin/Develop/ProtocolEx/cmake-build-debug/lib'
+
+PASSLIB_HOME = '/home/tzt77/Develop/ProtocolEx/cmake-build-debug/lib'
+OUTPUT_PARAM = ' -strFileName '
+OPT_COMMAND = '/HDD/llvm5.0/install/bin/opt'
 
 PASS = {
     'sys-call-counter': PASSLIB_HOME + '/SysLibCounter/libSysLibCounterPass.so',
     'global-identify-struct': PASSLIB_HOME + '/Global-Structure/libGlobalSTPass.so',
     'loop-counter': PASSLIB_HOME + '/LoopCounter/libLoopCounterPass.so',
+    'network-io-identifier': PASSLIB_HOME + '/NetworkIO/libNetworkIOPass.so',
 }
 
 PARAMS = {
     'sys-call-counter': '-Count-System-Call',
     'global-identify-struct': '-global-identify-struct',
     'loop-counter': '-Loop-Count',
+    'network-io-identifier': '-network-io',
 }
+
+CONFIGS = {
+    'network-io-identifier': 'system-io-config.txt',
+}
+
+
+def _command(key, path, new_file_name):
+    commands = [
+        OPT_COMMAND, ' -load ', PASS[key], ' ', path, ' ', PARAMS[key],
+        OUTPUT_PARAM, ' ', new_file_name]
+
+    if key in CONFIGS:
+        commands.append(' -SystemIOPath ')
+        commands.append(CONFIGS[key])
+
+    commands.append(' > /dev/null')
+
+    return ''.join(commands)
 
 
 def count():
@@ -43,10 +66,7 @@ def count():
             new_file_name = os.path.join(
                 paths[index], file_dirnames[index] + '-' + _pass + '.txt')
             new_file_names.append(new_file_name)
-
-            call_command = ''.join(['opt', ' -load ', PASS[_pass], ' ',
-                                    PARAMS[_pass], ' -strFileName ',
-                                    new_file_name, ' ', _path, ' > /dev/null'])
+            call_command = _command(_pass, _path, new_file_name)
 
             with open('test.sh', 'w') as run_script:
                 run_script.writelines(call_command)
@@ -67,7 +87,7 @@ def clean():
     for dirname, dirnames, filenames in os.walk('.'):
         # print path to all filenames.
         for filename in filenames:
-            if filename.endswith('.txt'):
+            if filename.endswith('.txt') and not ('config' in filename):
                 os.remove(
                     os.path.join(PATH, os.path.join(dirname[2:], filename)))
     print('Clean all txt file!')
