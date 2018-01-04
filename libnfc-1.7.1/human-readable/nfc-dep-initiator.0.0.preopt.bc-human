@@ -1,0 +1,1209 @@
+; ModuleID = 'nfc-dep-initiator.0.0.preopt.bc'
+source_filename = "ld-temp.o"
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+%struct.nfc_context = type opaque
+%struct.nfc_device = type opaque
+%struct.nfc_target = type <{ %union.nfc_target_info, %struct.nfc_modulation }>
+%union.nfc_target_info = type { %struct.nfc_iso14443a_info }
+%struct.nfc_iso14443a_info = type <{ [2 x i8], i8, i64, [10 x i8], i64, [254 x i8] }>
+%struct.nfc_modulation = type { i32, i32 }
+%struct.nfc_dep_info = type <{ [10 x i8], i8, i8, i8, i8, i8, [48 x i8], i64, i32 }>
+
+@main.abtTx = private unnamed_addr constant [13 x i8] c"Hello World!\00", align 1
+@.str = private unnamed_addr constant [11 x i8] c"Usage: %s\0A\00", align 1
+@context = internal global %struct.nfc_context* null, align 8, !dbg !0
+@.str.1 = private unnamed_addr constant [38 x i8] c"ERROR: Unable to init libnfc (malloc)\00", align 1
+@pnd = internal unnamed_addr global %struct.nfc_device* null, align 8, !dbg !31
+@.str.2 = private unnamed_addr constant [34 x i8] c"ERROR: Unable to open NFC device.\00", align 1
+@.str.3 = private unnamed_addr constant [23 x i8] c"NFC device: %s\0A opened\00", align 1
+@.str.4 = private unnamed_addr constant [19 x i8] c"nfc_initiator_init\00", align 1
+@.str.5 = private unnamed_addr constant [32 x i8] c"nfc_initiator_select_dep_target\00", align 1
+@.str.6 = private unnamed_addr constant [13 x i8] c"Sending: %s\0A\00", align 1
+@.str.7 = private unnamed_addr constant [31 x i8] c"nfc_initiator_transceive_bytes\00", align 1
+@.str.8 = private unnamed_addr constant [14 x i8] c"Received: %s\0A\00", align 1
+@.str.9 = private unnamed_addr constant [30 x i8] c"nfc_initiator_deselect_target\00", align 1
+@.str.10 = private unnamed_addr constant [7 x i8] c"%02x  \00", align 1
+@.str.2.11 = private unnamed_addr constant [15 x i8] c"%01x (%d bits)\00", align 1
+@.str.3.12 = private unnamed_addr constant [15 x i8] c"%02x (%d bits)\00", align 1
+@.str.4.13 = private unnamed_addr constant [5 x i8] c"%02x\00", align 1
+@.str.5.14 = private unnamed_addr constant [3 x i8] c"! \00", align 1
+@.str.6.15 = private unnamed_addr constant [3 x i8] c"  \00", align 1
+@.str.7.18 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+
+; Function Attrs: noreturn nounwind uwtable
+define i32 @main(i32 %argc, i8** nocapture readonly %argv) local_unnamed_addr #0 !dbg !51 {
+entry:
+  %nt = alloca %struct.nfc_target, align 1
+  %abtRx = alloca [264 x i8], align 16
+  %abtTx = alloca [13 x i8], align 1
+  tail call void @llvm.dbg.value(metadata i32 %argc, i64 0, metadata !60, metadata !185), !dbg !186
+  tail call void @llvm.dbg.value(metadata i8** %argv, i64 0, metadata !61, metadata !185), !dbg !187
+  %0 = getelementptr inbounds %struct.nfc_target, %struct.nfc_target* %nt, i64 0, i32 0, i32 0, i32 0, i64 0, !dbg !188
+  call void @llvm.lifetime.start.p0i8(i64 291, i8* nonnull %0) #8, !dbg !188
+  %1 = getelementptr inbounds [264 x i8], [264 x i8]* %abtRx, i64 0, i64 0, !dbg !189
+  call void @llvm.lifetime.start.p0i8(i64 264, i8* nonnull %1) #8, !dbg !189
+  tail call void @llvm.dbg.declare(metadata [264 x i8]* %abtRx, metadata !176, metadata !185), !dbg !190
+  %2 = getelementptr inbounds [13 x i8], [13 x i8]* %abtTx, i64 0, i64 0, !dbg !191
+  call void @llvm.lifetime.start.p0i8(i64 13, i8* nonnull %2) #8, !dbg !191
+  tail call void @llvm.dbg.declare(metadata [13 x i8]* %abtTx, metadata !180, metadata !185), !dbg !192
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* nonnull %2, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @main.abtTx, i64 0, i64 0), i64 13, i32 1, i1 false), !dbg !192
+  %cmp = icmp sgt i32 %argc, 1, !dbg !193
+  br i1 %cmp, label %if.then, label %if.end, !dbg !195
+
+if.then:                                          ; preds = %entry
+  %3 = load i8*, i8** %argv, align 8, !dbg !196, !tbaa !198
+  %call = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @.str, i64 0, i64 0), i8* %3), !dbg !202
+  tail call void @exit(i32 1) #9, !dbg !203
+  unreachable, !dbg !203
+
+if.end:                                           ; preds = %entry
+  tail call void @nfc_init(%struct.nfc_context** nonnull @context) #8, !dbg !204
+  %4 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !205, !tbaa !198
+  %cmp1 = icmp eq %struct.nfc_context* %4, null, !dbg !207
+  br i1 %cmp1, label %if.then2, label %if.end3, !dbg !208
+
+if.then2:                                         ; preds = %if.end
+  tail call void (i8*, ...) @warnx(i8* getelementptr inbounds ([38 x i8], [38 x i8]* @.str.1, i64 0, i64 0)) #8, !dbg !209
+  tail call void @exit(i32 1) #9, !dbg !211
+  unreachable, !dbg !211
+
+if.end3:                                          ; preds = %if.end
+  %call4 = tail call %struct.nfc_device* @nfc_open(%struct.nfc_context* nonnull %4, i8* null) #8, !dbg !212
+  store %struct.nfc_device* %call4, %struct.nfc_device** @pnd, align 8, !dbg !213, !tbaa !198
+  %cmp5 = icmp eq %struct.nfc_device* %call4, null, !dbg !214
+  br i1 %cmp5, label %if.then6, label %if.end7, !dbg !216
+
+if.then6:                                         ; preds = %if.end3
+  tail call void (i8*, ...) @warnx(i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.2, i64 0, i64 0)) #8, !dbg !217
+  %5 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !219, !tbaa !198
+  tail call void @nfc_exit(%struct.nfc_context* %5) #8, !dbg !220
+  tail call void @exit(i32 1) #9, !dbg !221
+  unreachable, !dbg !221
+
+if.end7:                                          ; preds = %if.end3
+  %call8 = tail call i8* @nfc_device_get_name(%struct.nfc_device* nonnull %call4) #8, !dbg !222
+  %call9 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str.3, i64 0, i64 0), i8* %call8), !dbg !223
+  %call10 = tail call void (i32)* @__sysv_signal(i32 2, void (i32)* nonnull @stop_dep_communication) #8, !dbg !224
+  %6 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !225, !tbaa !198
+  %call11 = tail call i32 @nfc_initiator_init(%struct.nfc_device* %6) #8, !dbg !227
+  %cmp12 = icmp slt i32 %call11, 0, !dbg !228
+  %7 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !tbaa !198
+  br i1 %cmp12, label %if.then13, label %if.end14, !dbg !229
+
+if.then13:                                        ; preds = %if.end7
+  tail call void @nfc_perror(%struct.nfc_device* %7, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.4, i64 0, i64 0)) #8, !dbg !230
+  %8 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !232, !tbaa !198
+  tail call void @nfc_close(%struct.nfc_device* %8) #8, !dbg !233
+  %9 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !234, !tbaa !198
+  tail call void @nfc_exit(%struct.nfc_context* %9) #8, !dbg !235
+  tail call void @exit(i32 1) #9, !dbg !236
+  unreachable, !dbg !236
+
+if.end14:                                         ; preds = %if.end7
+  tail call void @llvm.dbg.value(metadata %struct.nfc_target* %nt, i64 0, metadata !62, metadata !185), !dbg !237
+  %call15 = call i32 @nfc_initiator_select_dep_target(%struct.nfc_device* %7, i32 1, i32 2, %struct.nfc_dep_info* null, %struct.nfc_target* nonnull %nt, i32 1000) #8, !dbg !238
+  %cmp16 = icmp slt i32 %call15, 0, !dbg !240
+  br i1 %cmp16, label %if.then17, label %if.end18, !dbg !241
+
+if.then17:                                        ; preds = %if.end14
+  %10 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !242, !tbaa !198
+  call void @nfc_perror(%struct.nfc_device* %10, i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.5, i64 0, i64 0)) #8, !dbg !244
+  %11 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !245, !tbaa !198
+  call void @nfc_close(%struct.nfc_device* %11) #8, !dbg !246
+  %12 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !247, !tbaa !198
+  call void @nfc_exit(%struct.nfc_context* %12) #8, !dbg !248
+  call void @exit(i32 1) #9, !dbg !249
+  unreachable, !dbg !249
+
+if.end18:                                         ; preds = %if.end14
+  call void @llvm.dbg.value(metadata %struct.nfc_target* %nt, i64 0, metadata !62, metadata !185), !dbg !237
+  call void @print_nfc_target(%struct.nfc_target* nonnull %nt, i1 zeroext false) #8, !dbg !250
+  %call19 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.6, i64 0, i64 0), i8* nonnull %2), !dbg !251
+  %13 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !252, !tbaa !198
+  %call22 = call i32 @nfc_initiator_transceive_bytes(%struct.nfc_device* %13, i8* nonnull %2, i64 13, i8* nonnull %1, i64 264, i32 0) #8, !dbg !254
+  call void @llvm.dbg.value(metadata i32 %call22, i64 0, metadata !184, metadata !185), !dbg !255
+  %cmp23 = icmp slt i32 %call22, 0, !dbg !256
+  br i1 %cmp23, label %if.then24, label %if.end25, !dbg !257
+
+if.then24:                                        ; preds = %if.end18
+  %14 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !258, !tbaa !198
+  call void @nfc_perror(%struct.nfc_device* %14, i8* getelementptr inbounds ([31 x i8], [31 x i8]* @.str.7, i64 0, i64 0)) #8, !dbg !260
+  %15 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !261, !tbaa !198
+  call void @nfc_close(%struct.nfc_device* %15) #8, !dbg !262
+  %16 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !263, !tbaa !198
+  call void @nfc_exit(%struct.nfc_context* %16) #8, !dbg !264
+  call void @exit(i32 1) #9, !dbg !265
+  unreachable, !dbg !265
+
+if.end25:                                         ; preds = %if.end18
+  %idxprom = sext i32 %call22 to i64, !dbg !266
+  %arrayidx26 = getelementptr inbounds [264 x i8], [264 x i8]* %abtRx, i64 0, i64 %idxprom, !dbg !266
+  store i8 0, i8* %arrayidx26, align 1, !dbg !267, !tbaa !268
+  %call28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.8, i64 0, i64 0), i8* nonnull %1), !dbg !269
+  %17 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !270, !tbaa !198
+  %call29 = call i32 @nfc_initiator_deselect_target(%struct.nfc_device* %17) #8, !dbg !272
+  %cmp30 = icmp slt i32 %call29, 0, !dbg !273
+  %18 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !tbaa !198
+  br i1 %cmp30, label %if.then31, label %if.end32, !dbg !274
+
+if.then31:                                        ; preds = %if.end25
+  call void @nfc_perror(%struct.nfc_device* %18, i8* getelementptr inbounds ([30 x i8], [30 x i8]* @.str.9, i64 0, i64 0)) #8, !dbg !275
+  %19 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !277, !tbaa !198
+  call void @nfc_close(%struct.nfc_device* %19) #8, !dbg !278
+  %20 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !279, !tbaa !198
+  call void @nfc_exit(%struct.nfc_context* %20) #8, !dbg !280
+  call void @exit(i32 1) #9, !dbg !281
+  unreachable, !dbg !281
+
+if.end32:                                         ; preds = %if.end25
+  call void @nfc_close(%struct.nfc_device* %18) #8, !dbg !282
+  %21 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !283, !tbaa !198
+  call void @nfc_exit(%struct.nfc_context* %21) #8, !dbg !284
+  call void @exit(i32 0) #9, !dbg !285
+  unreachable, !dbg !285
+}
+
+; Function Attrs: nounwind readnone speculatable
+declare void @llvm.dbg.value(metadata, i64, metadata, metadata) #1
+
+; Function Attrs: argmemonly nounwind
+declare void @llvm.lifetime.start.p0i8(i64, i8* nocapture) #2
+
+; Function Attrs: nounwind readnone speculatable
+declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
+
+; Function Attrs: argmemonly nounwind
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture writeonly, i8* nocapture readonly, i64, i32, i1) #2
+
+; Function Attrs: nounwind
+declare i32 @printf(i8* nocapture readonly, ...) local_unnamed_addr #3
+
+; Function Attrs: noreturn nounwind
+declare void @exit(i32) local_unnamed_addr #4
+
+declare void @nfc_init(%struct.nfc_context**) local_unnamed_addr #5
+
+declare void @warnx(i8*, ...) local_unnamed_addr #5
+
+declare %struct.nfc_device* @nfc_open(%struct.nfc_context*, i8*) local_unnamed_addr #5
+
+declare void @nfc_exit(%struct.nfc_context*) local_unnamed_addr #5
+
+declare i8* @nfc_device_get_name(%struct.nfc_device*) local_unnamed_addr #5
+
+; Function Attrs: nounwind uwtable
+define internal void @stop_dep_communication(i32 %sig) #6 !dbg !286 {
+entry:
+  tail call void @llvm.dbg.value(metadata i32 %sig, i64 0, metadata !290, metadata !185), !dbg !291
+  %0 = load %struct.nfc_device*, %struct.nfc_device** @pnd, align 8, !dbg !292, !tbaa !198
+  %cmp = icmp eq %struct.nfc_device* %0, null, !dbg !294
+  br i1 %cmp, label %if.else, label %if.then, !dbg !295
+
+if.then:                                          ; preds = %entry
+  %call = tail call i32 @nfc_abort_command(%struct.nfc_device* nonnull %0) #8, !dbg !296
+  ret void, !dbg !298
+
+if.else:                                          ; preds = %entry
+  %1 = load %struct.nfc_context*, %struct.nfc_context** @context, align 8, !dbg !299, !tbaa !198
+  tail call void @nfc_exit(%struct.nfc_context* %1) #8, !dbg !301
+  tail call void @exit(i32 1) #9, !dbg !302
+  unreachable, !dbg !302
+}
+
+; Function Attrs: nounwind
+declare void (i32)* @__sysv_signal(i32, void (i32)*) local_unnamed_addr #3
+
+declare i32 @nfc_initiator_init(%struct.nfc_device*) local_unnamed_addr #5
+
+declare void @nfc_perror(%struct.nfc_device*, i8*) local_unnamed_addr #5
+
+declare void @nfc_close(%struct.nfc_device*) local_unnamed_addr #5
+
+declare i32 @nfc_initiator_select_dep_target(%struct.nfc_device*, i32, i32, %struct.nfc_dep_info*, %struct.nfc_target*, i32) local_unnamed_addr #5
+
+declare i32 @nfc_initiator_transceive_bytes(%struct.nfc_device*, i8*, i64, i8*, i64, i32) local_unnamed_addr #5
+
+declare i32 @nfc_initiator_deselect_target(%struct.nfc_device*) local_unnamed_addr #5
+
+declare i32 @nfc_abort_command(%struct.nfc_device*) local_unnamed_addr #5
+
+; Function Attrs: nounwind readnone uwtable
+define zeroext i8 @oddparity(i8 zeroext %bt) local_unnamed_addr #7 !dbg !303 {
+entry:
+  tail call void @llvm.dbg.value(metadata i8 %bt, i64 0, metadata !310, metadata !185), !dbg !311
+  %conv = zext i8 %bt to i32, !dbg !312
+  %0 = lshr i32 %conv, 4, !dbg !313
+  %conv.masked = and i32 %conv, 15, !dbg !314
+  %and = xor i32 %0, %conv.masked, !dbg !314
+  %shr2 = lshr i32 38505, %and, !dbg !315
+  %1 = trunc i32 %shr2 to i8, !dbg !316
+  %conv4 = and i8 %1, 1, !dbg !316
+  ret i8 %conv4, !dbg !317
+}
+
+; Function Attrs: nounwind uwtable
+define void @oddparity_bytes_ts(i8* nocapture readonly %pbtData, i64 %szLen, i8* nocapture %pbtPar) local_unnamed_addr #6 !dbg !318 {
+entry:
+  tail call void @llvm.dbg.value(metadata i8* %pbtData, i64 0, metadata !327, metadata !185), !dbg !331
+  tail call void @llvm.dbg.value(metadata i64 %szLen, i64 0, metadata !328, metadata !185), !dbg !332
+  tail call void @llvm.dbg.value(metadata i8* %pbtPar, i64 0, metadata !329, metadata !185), !dbg !333
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !330, metadata !185), !dbg !334
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !330, metadata !185), !dbg !334
+  %cmp6 = icmp eq i64 %szLen, 0, !dbg !335
+  br i1 %cmp6, label %for.end, label %for.body.lr.ph, !dbg !338
+
+for.body.lr.ph:                                   ; preds = %entry
+  %min.iters.check = icmp ult i64 %szLen, 16, !dbg !338
+  br i1 %min.iters.check, label %for.body.preheader, label %vector.memcheck, !dbg !338
+
+vector.memcheck:                                  ; preds = %for.body.lr.ph
+  %scevgep = getelementptr i8, i8* %pbtPar, i64 %szLen, !dbg !338
+  %scevgep8 = getelementptr i8, i8* %pbtData, i64 %szLen, !dbg !338
+  %bound0 = icmp ugt i8* %scevgep8, %pbtPar, !dbg !338
+  %bound1 = icmp ugt i8* %scevgep, %pbtData, !dbg !338
+  %memcheck.conflict = and i1 %bound0, %bound1, !dbg !338
+  br i1 %memcheck.conflict, label %for.body.preheader, label %vector.ph, !dbg !338
+
+vector.ph:                                        ; preds = %vector.memcheck
+  %n.vec = and i64 %szLen, -16, !dbg !338
+  %0 = add i64 %n.vec, -16, !dbg !338
+  %1 = lshr exact i64 %0, 4, !dbg !338
+  %2 = add nuw nsw i64 %1, 1, !dbg !338
+  %xtraiter9 = and i64 %2, 1, !dbg !338
+  %3 = icmp eq i64 %1, 0, !dbg !338
+  br i1 %3, label %middle.block.unr-lcssa, label %vector.ph.new, !dbg !338
+
+vector.ph.new:                                    ; preds = %vector.ph
+  %unroll_iter = sub nsw i64 %2, %xtraiter9, !dbg !338
+  br label %vector.body, !dbg !338
+
+vector.body:                                      ; preds = %vector.body, %vector.ph.new
+  %index = phi i64 [ 0, %vector.ph.new ], [ %index.next.1, %vector.body ], !dbg !339
+  %niter = phi i64 [ %unroll_iter, %vector.ph.new ], [ %niter.nsub.1, %vector.body ]
+  %4 = getelementptr inbounds i8, i8* %pbtData, i64 %index, !dbg !340
+  %5 = bitcast i8* %4 to <16 x i8>*, !dbg !340
+  %wide.load = load <16 x i8>, <16 x i8>* %5, align 1, !dbg !340, !tbaa !268, !alias.scope !342
+  %6 = zext <16 x i8> %wide.load to <16 x i32>, !dbg !345
+  %7 = lshr <16 x i32> %6, <i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4>, !dbg !347
+  %8 = and <16 x i32> %6, <i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15>, !dbg !348
+  %9 = xor <16 x i32> %7, %8, !dbg !348
+  %10 = lshr <16 x i32> <i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505>, %9, !dbg !349
+  %11 = trunc <16 x i32> %10 to <16 x i8>, !dbg !350
+  %12 = and <16 x i8> %11, <i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1>, !dbg !350
+  %13 = getelementptr inbounds i8, i8* %pbtPar, i64 %index, !dbg !351
+  %14 = bitcast i8* %13 to <16 x i8>*, !dbg !352
+  store <16 x i8> %12, <16 x i8>* %14, align 1, !dbg !352, !tbaa !268, !alias.scope !353, !noalias !342
+  %index.next = or i64 %index, 16, !dbg !339
+  %15 = getelementptr inbounds i8, i8* %pbtData, i64 %index.next, !dbg !340
+  %16 = bitcast i8* %15 to <16 x i8>*, !dbg !340
+  %wide.load.1 = load <16 x i8>, <16 x i8>* %16, align 1, !dbg !340, !tbaa !268, !alias.scope !342
+  %17 = zext <16 x i8> %wide.load.1 to <16 x i32>, !dbg !345
+  %18 = lshr <16 x i32> %17, <i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4>, !dbg !347
+  %19 = and <16 x i32> %17, <i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15>, !dbg !348
+  %20 = xor <16 x i32> %18, %19, !dbg !348
+  %21 = lshr <16 x i32> <i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505>, %20, !dbg !349
+  %22 = trunc <16 x i32> %21 to <16 x i8>, !dbg !350
+  %23 = and <16 x i8> %22, <i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1>, !dbg !350
+  %24 = getelementptr inbounds i8, i8* %pbtPar, i64 %index.next, !dbg !351
+  %25 = bitcast i8* %24 to <16 x i8>*, !dbg !352
+  store <16 x i8> %23, <16 x i8>* %25, align 1, !dbg !352, !tbaa !268, !alias.scope !353, !noalias !342
+  %index.next.1 = add i64 %index, 32, !dbg !339
+  %niter.nsub.1 = add i64 %niter, -2, !dbg !339
+  %niter.ncmp.1 = icmp eq i64 %niter.nsub.1, 0, !dbg !339
+  br i1 %niter.ncmp.1, label %middle.block.unr-lcssa, label %vector.body, !dbg !339, !llvm.loop !355
+
+middle.block.unr-lcssa:                           ; preds = %vector.body, %vector.ph
+  %index.unr = phi i64 [ 0, %vector.ph ], [ %index.next.1, %vector.body ]
+  %lcmp.mod10 = icmp eq i64 %xtraiter9, 0
+  br i1 %lcmp.mod10, label %middle.block, label %vector.body.epil
+
+vector.body.epil:                                 ; preds = %middle.block.unr-lcssa
+  %26 = getelementptr inbounds i8, i8* %pbtData, i64 %index.unr, !dbg !340
+  %27 = bitcast i8* %26 to <16 x i8>*, !dbg !340
+  %wide.load.epil = load <16 x i8>, <16 x i8>* %27, align 1, !dbg !340, !tbaa !268, !alias.scope !342
+  %28 = zext <16 x i8> %wide.load.epil to <16 x i32>, !dbg !345
+  %29 = lshr <16 x i32> %28, <i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4, i32 4>, !dbg !347
+  %30 = and <16 x i32> %28, <i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15, i32 15>, !dbg !348
+  %31 = xor <16 x i32> %29, %30, !dbg !348
+  %32 = lshr <16 x i32> <i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505, i32 38505>, %31, !dbg !349
+  %33 = trunc <16 x i32> %32 to <16 x i8>, !dbg !350
+  %34 = and <16 x i8> %33, <i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1, i8 1>, !dbg !350
+  %35 = getelementptr inbounds i8, i8* %pbtPar, i64 %index.unr, !dbg !351
+  %36 = bitcast i8* %35 to <16 x i8>*, !dbg !352
+  store <16 x i8> %34, <16 x i8>* %36, align 1, !dbg !352, !tbaa !268, !alias.scope !353, !noalias !342
+  br label %middle.block
+
+middle.block:                                     ; preds = %vector.body.epil, %middle.block.unr-lcssa
+  %cmp.n = icmp eq i64 %n.vec, %szLen
+  br i1 %cmp.n, label %for.end, label %for.body.preheader, !dbg !338
+
+for.body.preheader:                               ; preds = %middle.block, %vector.memcheck, %for.body.lr.ph
+  %szByteNr.07.ph = phi i64 [ 0, %vector.memcheck ], [ 0, %for.body.lr.ph ], [ %n.vec, %middle.block ]
+  %37 = add i64 %szLen, -1, !dbg !340
+  %xtraiter = and i64 %szLen, 1, !dbg !340
+  %lcmp.mod = icmp eq i64 %xtraiter, 0, !dbg !340
+  br i1 %lcmp.mod, label %for.body.prol.loopexit, label %for.body.prol, !dbg !340
+
+for.body.prol:                                    ; preds = %for.body.preheader
+  tail call void @llvm.dbg.value(metadata i64 %szByteNr.07.ph, i64 0, metadata !330, metadata !185), !dbg !334
+  %arrayidx.prol = getelementptr inbounds i8, i8* %pbtData, i64 %szByteNr.07.ph, !dbg !340
+  %38 = load i8, i8* %arrayidx.prol, align 1, !dbg !340, !tbaa !268
+  tail call void @llvm.dbg.value(metadata i8 %38, i64 0, metadata !310, metadata !185), !dbg !359
+  %conv.i.prol = zext i8 %38 to i32, !dbg !345
+  %39 = lshr i32 %conv.i.prol, 4, !dbg !347
+  %conv.masked.i.prol = and i32 %conv.i.prol, 15, !dbg !348
+  %and.i.prol = xor i32 %39, %conv.masked.i.prol, !dbg !348
+  %shr2.i.prol = lshr i32 38505, %and.i.prol, !dbg !349
+  %40 = trunc i32 %shr2.i.prol to i8, !dbg !350
+  %conv4.i.prol = and i8 %40, 1, !dbg !350
+  %arrayidx1.prol = getelementptr inbounds i8, i8* %pbtPar, i64 %szByteNr.07.ph, !dbg !351
+  store i8 %conv4.i.prol, i8* %arrayidx1.prol, align 1, !dbg !352, !tbaa !268
+  %inc.prol = or i64 %szByteNr.07.ph, 1, !dbg !339
+  tail call void @llvm.dbg.value(metadata i64 %inc.prol, i64 0, metadata !330, metadata !185), !dbg !334
+  tail call void @llvm.dbg.value(metadata i64 %inc.prol, i64 0, metadata !330, metadata !185), !dbg !334
+  br label %for.body.prol.loopexit, !dbg !338
+
+for.body.prol.loopexit:                           ; preds = %for.body.prol, %for.body.preheader
+  %szByteNr.07.unr = phi i64 [ %szByteNr.07.ph, %for.body.preheader ], [ %inc.prol, %for.body.prol ]
+  %41 = icmp eq i64 %37, %szByteNr.07.ph, !dbg !340
+  br i1 %41, label %for.end, label %for.body.preheader.new, !dbg !340
+
+for.body.preheader.new:                           ; preds = %for.body.prol.loopexit
+  br label %for.body, !dbg !340
+
+for.body:                                         ; preds = %for.body, %for.body.preheader.new
+  %szByteNr.07 = phi i64 [ %szByteNr.07.unr, %for.body.preheader.new ], [ %inc.1, %for.body ]
+  tail call void @llvm.dbg.value(metadata i64 %szByteNr.07, i64 0, metadata !330, metadata !185), !dbg !334
+  %arrayidx = getelementptr inbounds i8, i8* %pbtData, i64 %szByteNr.07, !dbg !340
+  %42 = load i8, i8* %arrayidx, align 1, !dbg !340, !tbaa !268
+  tail call void @llvm.dbg.value(metadata i8 %42, i64 0, metadata !310, metadata !185), !dbg !359
+  %conv.i = zext i8 %42 to i32, !dbg !345
+  %43 = lshr i32 %conv.i, 4, !dbg !347
+  %conv.masked.i = and i32 %conv.i, 15, !dbg !348
+  %and.i = xor i32 %43, %conv.masked.i, !dbg !348
+  %shr2.i = lshr i32 38505, %and.i, !dbg !349
+  %44 = trunc i32 %shr2.i to i8, !dbg !350
+  %conv4.i = and i8 %44, 1, !dbg !350
+  %arrayidx1 = getelementptr inbounds i8, i8* %pbtPar, i64 %szByteNr.07, !dbg !351
+  store i8 %conv4.i, i8* %arrayidx1, align 1, !dbg !352, !tbaa !268
+  %inc = add nuw i64 %szByteNr.07, 1, !dbg !339
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !330, metadata !185), !dbg !334
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !330, metadata !185), !dbg !334
+  tail call void @llvm.dbg.value(metadata i64 %szByteNr.07, i64 0, metadata !330, metadata !185), !dbg !334
+  %arrayidx.1 = getelementptr inbounds i8, i8* %pbtData, i64 %inc, !dbg !340
+  %45 = load i8, i8* %arrayidx.1, align 1, !dbg !340, !tbaa !268
+  tail call void @llvm.dbg.value(metadata i8 %42, i64 0, metadata !310, metadata !185), !dbg !359
+  %conv.i.1 = zext i8 %45 to i32, !dbg !345
+  %46 = lshr i32 %conv.i.1, 4, !dbg !347
+  %conv.masked.i.1 = and i32 %conv.i.1, 15, !dbg !348
+  %and.i.1 = xor i32 %46, %conv.masked.i.1, !dbg !348
+  %shr2.i.1 = lshr i32 38505, %and.i.1, !dbg !349
+  %47 = trunc i32 %shr2.i.1 to i8, !dbg !350
+  %conv4.i.1 = and i8 %47, 1, !dbg !350
+  %arrayidx1.1 = getelementptr inbounds i8, i8* %pbtPar, i64 %inc, !dbg !351
+  store i8 %conv4.i.1, i8* %arrayidx1.1, align 1, !dbg !352, !tbaa !268
+  %inc.1 = add i64 %szByteNr.07, 2, !dbg !339
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !330, metadata !185), !dbg !334
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !330, metadata !185), !dbg !334
+  %exitcond.1 = icmp eq i64 %inc.1, %szLen, !dbg !335
+  br i1 %exitcond.1, label %for.end, label %for.body, !dbg !338, !llvm.loop !360
+
+for.end:                                          ; preds = %for.body, %for.body.prol.loopexit, %middle.block, %entry
+  ret void, !dbg !361
+}
+
+; Function Attrs: nounwind uwtable
+define void @print_hex(i8* nocapture readonly %pbtData, i64 %szBytes) local_unnamed_addr #6 !dbg !362 {
+entry:
+  tail call void @llvm.dbg.value(metadata i8* %pbtData, i64 0, metadata !366, metadata !185), !dbg !369
+  tail call void @llvm.dbg.value(metadata i64 %szBytes, i64 0, metadata !367, metadata !185), !dbg !370
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !368, metadata !185), !dbg !371
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !368, metadata !185), !dbg !371
+  %cmp5 = icmp eq i64 %szBytes, 0, !dbg !372
+  br i1 %cmp5, label %for.end, label %for.body.preheader, !dbg !375
+
+for.body.preheader:                               ; preds = %entry
+  br label %for.body, !dbg !376
+
+for.body:                                         ; preds = %for.body, %for.body.preheader
+  %szPos.06 = phi i64 [ %inc, %for.body ], [ 0, %for.body.preheader ]
+  tail call void @llvm.dbg.value(metadata i64 %szPos.06, i64 0, metadata !368, metadata !185), !dbg !371
+  %arrayidx = getelementptr inbounds i8, i8* %pbtData, i64 %szPos.06, !dbg !376
+  %0 = load i8, i8* %arrayidx, align 1, !dbg !376, !tbaa !268
+  %conv = zext i8 %0 to i32, !dbg !376
+  %call = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.10, i64 0, i64 0), i32 %conv), !dbg !378
+  %inc = add nuw i64 %szPos.06, 1, !dbg !379
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !368, metadata !185), !dbg !371
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !368, metadata !185), !dbg !371
+  %exitcond = icmp eq i64 %inc, %szBytes, !dbg !372
+  br i1 %exitcond, label %for.end, label %for.body, !dbg !375, !llvm.loop !380
+
+for.end:                                          ; preds = %for.body, %entry
+  %putchar = tail call i32 @putchar(i32 10), !dbg !382
+  ret void, !dbg !383
+}
+
+; Function Attrs: nounwind
+declare i32 @putchar(i32) #8
+
+; Function Attrs: nounwind uwtable
+define void @print_hex_bits(i8* nocapture readonly %pbtData, i64 %szBits) local_unnamed_addr #6 !dbg !384 {
+entry:
+  tail call void @llvm.dbg.value(metadata i8* %pbtData, i64 0, metadata !386, metadata !185), !dbg !391
+  tail call void @llvm.dbg.value(metadata i64 %szBits, i64 0, metadata !387, metadata !185), !dbg !392
+  %div = lshr i64 %szBits, 3, !dbg !393
+  tail call void @llvm.dbg.value(metadata i64 %div, i64 0, metadata !390, metadata !185), !dbg !394
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !389, metadata !185), !dbg !395
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !389, metadata !185), !dbg !395
+  %cmp28 = icmp eq i64 %div, 0, !dbg !396
+  br i1 %cmp28, label %for.end, label %for.body.preheader, !dbg !399
+
+for.body.preheader:                               ; preds = %entry
+  br label %for.body, !dbg !400
+
+for.body:                                         ; preds = %for.body, %for.body.preheader
+  %szPos.029 = phi i64 [ %inc, %for.body ], [ 0, %for.body.preheader ]
+  tail call void @llvm.dbg.value(metadata i64 %szPos.029, i64 0, metadata !389, metadata !185), !dbg !395
+  %arrayidx = getelementptr inbounds i8, i8* %pbtData, i64 %szPos.029, !dbg !400
+  %0 = load i8, i8* %arrayidx, align 1, !dbg !400, !tbaa !268
+  %conv = zext i8 %0 to i32, !dbg !400
+  %call = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.10, i64 0, i64 0), i32 %conv), !dbg !402
+  %inc = add nuw nsw i64 %szPos.029, 1, !dbg !403
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !389, metadata !185), !dbg !395
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !389, metadata !185), !dbg !395
+  %exitcond = icmp eq i64 %inc, %div, !dbg !396
+  br i1 %exitcond, label %for.end, label %for.body, !dbg !399, !llvm.loop !404
+
+for.end:                                          ; preds = %for.body, %entry
+  %1 = trunc i64 %szBits to i32, !dbg !406
+  %conv1 = and i32 %1, 7, !dbg !406
+  %cmp3 = icmp eq i32 %conv1, 0, !dbg !407
+  br i1 %cmp3, label %if.end17, label %if.then, !dbg !409
+
+if.then:                                          ; preds = %for.end
+  %cmp6 = icmp ult i32 %conv1, 5, !dbg !410
+  %arrayidx9 = getelementptr inbounds i8, i8* %pbtData, i64 %div
+  %2 = load i8, i8* %arrayidx9, align 1, !tbaa !268
+  %conv10 = zext i8 %2 to i32
+  br i1 %cmp6, label %if.then8, label %if.else, !dbg !413
+
+if.then8:                                         ; preds = %if.then
+  %call12 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.2.11, i64 0, i64 0), i32 %conv10, i32 %conv1), !dbg !414
+  br label %if.end17, !dbg !414
+
+if.else:                                          ; preds = %if.then
+  %call16 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.3.12, i64 0, i64 0), i32 %conv10, i32 %conv1), !dbg !415
+  br label %if.end17
+
+if.end17:                                         ; preds = %if.else, %if.then8, %for.end
+  %putchar = tail call i32 @putchar(i32 10), !dbg !416
+  ret void, !dbg !417
+}
+
+; Function Attrs: nounwind uwtable
+define void @print_hex_par(i8* nocapture readonly %pbtData, i64 %szBits, i8* nocapture readonly %pbtDataPar) local_unnamed_addr #6 !dbg !418 {
+entry:
+  tail call void @llvm.dbg.value(metadata i8* %pbtData, i64 0, metadata !422, metadata !185), !dbg !428
+  tail call void @llvm.dbg.value(metadata i64 %szBits, i64 0, metadata !423, metadata !185), !dbg !429
+  tail call void @llvm.dbg.value(metadata i8* %pbtDataPar, i64 0, metadata !424, metadata !185), !dbg !430
+  %div = lshr i64 %szBits, 3, !dbg !431
+  tail call void @llvm.dbg.value(metadata i64 %div, i64 0, metadata !427, metadata !185), !dbg !432
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !426, metadata !185), !dbg !433
+  tail call void @llvm.dbg.value(metadata i64 0, i64 0, metadata !426, metadata !185), !dbg !433
+  %cmp43 = icmp eq i64 %div, 0, !dbg !434
+  br i1 %cmp43, label %for.end, label %for.body.preheader, !dbg !437
+
+for.body.preheader:                               ; preds = %entry
+  br label %for.body, !dbg !438
+
+for.body:                                         ; preds = %for.inc, %for.body.preheader
+  %szPos.044 = phi i64 [ %inc, %for.inc ], [ 0, %for.body.preheader ]
+  tail call void @llvm.dbg.value(metadata i64 %szPos.044, i64 0, metadata !426, metadata !185), !dbg !433
+  %arrayidx = getelementptr inbounds i8, i8* %pbtData, i64 %szPos.044, !dbg !438
+  %0 = load i8, i8* %arrayidx, align 1, !dbg !438, !tbaa !268
+  %conv = zext i8 %0 to i32, !dbg !438
+  %call = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.4.13, i64 0, i64 0), i32 %conv), !dbg !440
+  %1 = load i8, i8* %arrayidx, align 1, !dbg !441, !tbaa !268
+  tail call void @llvm.dbg.value(metadata i8 %1, i64 0, metadata !310, metadata !185), !dbg !443
+  %conv.i = zext i8 %1 to i32, !dbg !445
+  %2 = lshr i32 %conv.i, 4, !dbg !446
+  %conv.masked.i = and i32 %conv.i, 15, !dbg !447
+  %and.i = xor i32 %2, %conv.masked.i, !dbg !447
+  %shr2.i = lshr i32 38505, %and.i, !dbg !448
+  %3 = trunc i32 %shr2.i to i8, !dbg !449
+  %conv4.i = and i8 %3, 1, !dbg !449
+  %arrayidx4 = getelementptr inbounds i8, i8* %pbtDataPar, i64 %szPos.044, !dbg !450
+  %4 = load i8, i8* %arrayidx4, align 1, !dbg !450, !tbaa !268
+  %cmp6 = icmp eq i8 %conv4.i, %4, !dbg !451
+  br i1 %cmp6, label %if.else, label %if.then, !dbg !452
+
+if.then:                                          ; preds = %for.body
+  %call8 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.5.14, i64 0, i64 0)), !dbg !453
+  br label %for.inc, !dbg !455
+
+if.else:                                          ; preds = %for.body
+  %call9 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.6.15, i64 0, i64 0)), !dbg !456
+  br label %for.inc
+
+for.inc:                                          ; preds = %if.else, %if.then
+  %inc = add nuw nsw i64 %szPos.044, 1, !dbg !458
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !426, metadata !185), !dbg !433
+  tail call void @llvm.dbg.value(metadata i64 %inc, i64 0, metadata !426, metadata !185), !dbg !433
+  %exitcond = icmp eq i64 %inc, %div, !dbg !434
+  br i1 %exitcond, label %for.end, label %for.body, !dbg !437, !llvm.loop !459
+
+for.end:                                          ; preds = %for.inc, %entry
+  %5 = trunc i64 %szBits to i32, !dbg !461
+  %conv10 = and i32 %5, 7, !dbg !461
+  %cmp12 = icmp eq i32 %conv10, 0, !dbg !462
+  br i1 %cmp12, label %if.end29, label %if.then14, !dbg !464
+
+if.then14:                                        ; preds = %for.end
+  %cmp16 = icmp ult i32 %conv10, 5, !dbg !465
+  %arrayidx19 = getelementptr inbounds i8, i8* %pbtData, i64 %div
+  %6 = load i8, i8* %arrayidx19, align 1, !tbaa !268
+  %conv20 = zext i8 %6 to i32
+  br i1 %cmp16, label %if.then18, label %if.else23, !dbg !468
+
+if.then18:                                        ; preds = %if.then14
+  %call22 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.2.11, i64 0, i64 0), i32 %conv20, i32 %conv10), !dbg !469
+  br label %if.end29, !dbg !469
+
+if.else23:                                        ; preds = %if.then14
+  %call27 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.3.12, i64 0, i64 0), i32 %conv20, i32 %conv10), !dbg !470
+  br label %if.end29
+
+if.end29:                                         ; preds = %if.else23, %if.then18, %for.end
+  %putchar = tail call i32 @putchar(i32 10), !dbg !471
+  ret void, !dbg !472
+}
+
+; Function Attrs: nounwind uwtable
+define void @print_nfc_target(%struct.nfc_target* %pnt, i1 zeroext %verbose) local_unnamed_addr #6 !dbg !473 {
+entry:
+  %s = alloca i8*, align 8
+  tail call void @llvm.dbg.value(metadata %struct.nfc_target* %pnt, i64 0, metadata !571, metadata !185), !dbg !575
+  tail call void @llvm.dbg.value(metadata i1 %verbose, i64 0, metadata !572, metadata !185), !dbg !576
+  %0 = bitcast i8** %s to i8*, !dbg !577
+  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0) #8, !dbg !577
+  tail call void @llvm.dbg.value(metadata i8** %s, i64 0, metadata !573, metadata !185), !dbg !578
+  %call = call i32 @str_nfc_target(i8** nonnull %s, %struct.nfc_target* %pnt, i1 zeroext %verbose) #8, !dbg !579
+  %1 = load i8*, i8** %s, align 8, !dbg !580, !tbaa !198
+  call void @llvm.dbg.value(metadata i8* %1, i64 0, metadata !573, metadata !185), !dbg !578
+  %call1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.7.18, i64 0, i64 0), i8* %1), !dbg !581
+  %2 = load i8*, i8** %s, align 8, !dbg !582, !tbaa !198
+  call void @llvm.dbg.value(metadata i8* %2, i64 0, metadata !573, metadata !185), !dbg !578
+  call void @nfc_free(i8* %2) #8, !dbg !583
+  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #8, !dbg !584
+  ret void, !dbg !584
+}
+
+declare i32 @str_nfc_target(i8**, %struct.nfc_target*, i1 zeroext) local_unnamed_addr #5
+
+declare void @nfc_free(i8*) local_unnamed_addr #5
+
+; Function Attrs: argmemonly nounwind
+declare void @llvm.lifetime.end.p0i8(i64, i8* nocapture) #2
+
+attributes #0 = { noreturn nounwind uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind readnone speculatable }
+attributes #2 = { argmemonly nounwind }
+attributes #3 = { nounwind "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { noreturn nounwind "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #5 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #6 = { nounwind uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #7 = { nounwind readnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #8 = { nounwind }
+attributes #9 = { noreturn nounwind }
+
+!llvm.dbg.cu = !{!2, !39}
+!llvm.ident = !{!46, !46}
+!llvm.module.flags = !{!47, !48, !49, !50}
+
+!0 = !DIGlobalVariableExpression(var: !1)
+!1 = distinct !DIGlobalVariable(name: "context", scope: !2, file: !3, line: 58, type: !36, isLocal: true, isDefinition: true)
+!2 = distinct !DICompileUnit(language: DW_LANG_C99, file: !3, producer: "clang version 5.0.0 (tags/RELEASE_500/final)", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, enums: !4, retainedTypes: !28, globals: !30)
+!3 = !DIFile(filename: "nfc-dep-initiator.c", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/examples")
+!4 = !{!5, !11, !21}
+!5 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !6, line: 151, size: 32, elements: !7)
+!6 = !DIFile(filename: "../include/nfc/nfc-types.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/examples")
+!7 = !{!8, !9, !10}
+!8 = !DIEnumerator(name: "NDM_UNDEFINED", value: 0)
+!9 = !DIEnumerator(name: "NDM_PASSIVE", value: 1)
+!10 = !DIEnumerator(name: "NDM_ACTIVE", value: 2)
+!11 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !6, line: 295, size: 32, elements: !12)
+!12 = !{!13, !14, !15, !16, !17, !18, !19, !20}
+!13 = !DIEnumerator(name: "NMT_ISO14443A", value: 1)
+!14 = !DIEnumerator(name: "NMT_JEWEL", value: 2)
+!15 = !DIEnumerator(name: "NMT_ISO14443B", value: 3)
+!16 = !DIEnumerator(name: "NMT_ISO14443BI", value: 4)
+!17 = !DIEnumerator(name: "NMT_ISO14443B2SR", value: 5)
+!18 = !DIEnumerator(name: "NMT_ISO14443B2CT", value: 6)
+!19 = !DIEnumerator(name: "NMT_FELICA", value: 7)
+!20 = !DIEnumerator(name: "NMT_DEP", value: 8)
+!21 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !6, line: 283, size: 32, elements: !22)
+!22 = !{!23, !24, !25, !26, !27}
+!23 = !DIEnumerator(name: "NBR_UNDEFINED", value: 0)
+!24 = !DIEnumerator(name: "NBR_106", value: 1)
+!25 = !DIEnumerator(name: "NBR_212", value: 2)
+!26 = !DIEnumerator(name: "NBR_424", value: 3)
+!27 = !DIEnumerator(name: "NBR_847", value: 4)
+!28 = !{!29}
+!29 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+!30 = !{!31, !0}
+!31 = !DIGlobalVariableExpression(var: !32)
+!32 = distinct !DIGlobalVariable(name: "pnd", scope: !2, file: !3, line: 57, type: !33, isLocal: true, isDefinition: true)
+!33 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !34, size: 64)
+!34 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_device", file: !6, line: 52, baseType: !35)
+!35 = !DICompositeType(tag: DW_TAG_structure_type, name: "nfc_device", file: !6, line: 52, flags: DIFlagFwdDecl)
+!36 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !37, size: 64)
+!37 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_context", file: !6, line: 47, baseType: !38)
+!38 = !DICompositeType(tag: DW_TAG_structure_type, name: "nfc_context", file: !6, line: 47, flags: DIFlagFwdDecl)
+!39 = distinct !DICompileUnit(language: DW_LANG_C99, file: !40, producer: "clang version 5.0.0 (tags/RELEASE_500/final)", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, enums: !41)
+!40 = !DIFile(filename: "nfc-utils.c", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/utils")
+!41 = !{!42, !44, !45}
+!42 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !43, line: 151, size: 32, elements: !7)
+!43 = !DIFile(filename: "../include/nfc/nfc-types.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/utils")
+!44 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !43, line: 295, size: 32, elements: !12)
+!45 = !DICompositeType(tag: DW_TAG_enumeration_type, file: !43, line: 283, size: 32, elements: !22)
+!46 = !{!"clang version 5.0.0 (tags/RELEASE_500/final)"}
+!47 = !{i32 2, !"Dwarf Version", i32 4}
+!48 = !{i32 2, !"Debug Info Version", i32 3}
+!49 = !{i32 1, !"wchar_size", i32 4}
+!50 = !{i32 7, !"PIC Level", i32 2}
+!51 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 72, type: !52, isLocal: false, isDefinition: true, scopeLine: 73, flags: DIFlagPrototyped, isOptimized: true, unit: !2, variables: !59)
+!52 = !DISubroutineType(types: !53)
+!53 = !{!54, !54, !55}
+!54 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+!55 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !56, size: 64)
+!56 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !57, size: 64)
+!57 = !DIDerivedType(tag: DW_TAG_const_type, baseType: !58)
+!58 = !DIBasicType(name: "char", size: 8, encoding: DW_ATE_signed_char)
+!59 = !{!60, !61, !62, !176, !180, !184}
+!60 = !DILocalVariable(name: "argc", arg: 1, scope: !51, file: !3, line: 72, type: !54)
+!61 = !DILocalVariable(name: "argv", arg: 2, scope: !51, file: !3, line: 72, type: !55)
+!62 = !DILocalVariable(name: "nt", scope: !51, file: !3, line: 74, type: !63)
+!63 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_target", file: !6, line: 331, baseType: !64)
+!64 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 328, size: 2328, elements: !65)
+!65 = !{!66, !168}
+!66 = !DIDerivedType(tag: DW_TAG_member, name: "nti", scope: !64, file: !6, line: 329, baseType: !67, size: 2264)
+!67 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_target_info", file: !6, line: 277, baseType: !68)
+!68 = distinct !DICompositeType(tag: DW_TAG_union_type, file: !6, line: 268, size: 2264, elements: !69)
+!69 = !{!70, !95, !107, !121, !133, !138, !145, !151}
+!70 = !DIDerivedType(tag: DW_TAG_member, name: "nai", scope: !68, file: !6, line: 269, baseType: !71, size: 2264)
+!71 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443a_info", file: !6, line: 192, baseType: !72)
+!72 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 185, size: 2264, elements: !73)
+!73 = !{!74, !81, !82, !86, !90, !91}
+!74 = !DIDerivedType(tag: DW_TAG_member, name: "abtAtqa", scope: !72, file: !6, line: 186, baseType: !75, size: 16)
+!75 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 16, elements: !79)
+!76 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint8_t", file: !77, line: 48, baseType: !78)
+!77 = !DIFile(filename: "/usr/include/stdint.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/examples")
+!78 = !DIBasicType(name: "unsigned char", size: 8, encoding: DW_ATE_unsigned_char)
+!79 = !{!80}
+!80 = !DISubrange(count: 2)
+!81 = !DIDerivedType(tag: DW_TAG_member, name: "btSak", scope: !72, file: !6, line: 187, baseType: !76, size: 8, offset: 16)
+!82 = !DIDerivedType(tag: DW_TAG_member, name: "szUidLen", scope: !72, file: !6, line: 188, baseType: !83, size: 64, offset: 24)
+!83 = !DIDerivedType(tag: DW_TAG_typedef, name: "size_t", file: !84, line: 62, baseType: !85)
+!84 = !DIFile(filename: "/home/stly/Documents/llvm/llvm-build/lib/clang/5.0.0/include/stddef.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/examples")
+!85 = !DIBasicType(name: "long unsigned int", size: 64, encoding: DW_ATE_unsigned)
+!86 = !DIDerivedType(tag: DW_TAG_member, name: "abtUid", scope: !72, file: !6, line: 189, baseType: !87, size: 80, offset: 88)
+!87 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 80, elements: !88)
+!88 = !{!89}
+!89 = !DISubrange(count: 10)
+!90 = !DIDerivedType(tag: DW_TAG_member, name: "szAtsLen", scope: !72, file: !6, line: 190, baseType: !83, size: 64, offset: 168)
+!91 = !DIDerivedType(tag: DW_TAG_member, name: "abtAts", scope: !72, file: !6, line: 191, baseType: !92, size: 2032, offset: 232)
+!92 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 2032, elements: !93)
+!93 = !{!94}
+!94 = !DISubrange(count: 254)
+!95 = !DIDerivedType(tag: DW_TAG_member, name: "nfi", scope: !68, file: !6, line: 270, baseType: !96, size: 216)
+!96 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_felica_info", file: !6, line: 204, baseType: !97)
+!97 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 198, size: 216, elements: !98)
+!98 = !{!99, !100, !101, !105, !106}
+!99 = !DIDerivedType(tag: DW_TAG_member, name: "szLen", scope: !97, file: !6, line: 199, baseType: !83, size: 64)
+!100 = !DIDerivedType(tag: DW_TAG_member, name: "btResCode", scope: !97, file: !6, line: 200, baseType: !76, size: 8, offset: 64)
+!101 = !DIDerivedType(tag: DW_TAG_member, name: "abtId", scope: !97, file: !6, line: 201, baseType: !102, size: 64, offset: 72)
+!102 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 64, elements: !103)
+!103 = !{!104}
+!104 = !DISubrange(count: 8)
+!105 = !DIDerivedType(tag: DW_TAG_member, name: "abtPad", scope: !97, file: !6, line: 202, baseType: !102, size: 64, offset: 136)
+!106 = !DIDerivedType(tag: DW_TAG_member, name: "abtSysCode", scope: !97, file: !6, line: 203, baseType: !75, size: 16, offset: 200)
+!107 = !DIDerivedType(tag: DW_TAG_member, name: "nbi", scope: !68, file: !6, line: 271, baseType: !108, size: 96)
+!108 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b_info", file: !6, line: 219, baseType: !109)
+!109 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 210, size: 96, elements: !110)
+!110 = !{!111, !115, !116, !120}
+!111 = !DIDerivedType(tag: DW_TAG_member, name: "abtPupi", scope: !109, file: !6, line: 212, baseType: !112, size: 32)
+!112 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 32, elements: !113)
+!113 = !{!114}
+!114 = !DISubrange(count: 4)
+!115 = !DIDerivedType(tag: DW_TAG_member, name: "abtApplicationData", scope: !109, file: !6, line: 214, baseType: !112, size: 32, offset: 32)
+!116 = !DIDerivedType(tag: DW_TAG_member, name: "abtProtocolInfo", scope: !109, file: !6, line: 216, baseType: !117, size: 24, offset: 64)
+!117 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 24, elements: !118)
+!118 = !{!119}
+!119 = !DISubrange(count: 3)
+!120 = !DIDerivedType(tag: DW_TAG_member, name: "ui8CardIdentifier", scope: !109, file: !6, line: 218, baseType: !76, size: 8, offset: 88)
+!121 = !DIDerivedType(tag: DW_TAG_member, name: "nii", scope: !68, file: !6, line: 272, baseType: !122, size: 376)
+!122 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443bi_info", file: !6, line: 235, baseType: !123)
+!123 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 225, size: 376, elements: !124)
+!124 = !{!125, !126, !127, !128, !129}
+!125 = !DIDerivedType(tag: DW_TAG_member, name: "abtDIV", scope: !123, file: !6, line: 227, baseType: !112, size: 32)
+!126 = !DIDerivedType(tag: DW_TAG_member, name: "btVerLog", scope: !123, file: !6, line: 229, baseType: !76, size: 8, offset: 32)
+!127 = !DIDerivedType(tag: DW_TAG_member, name: "btConfig", scope: !123, file: !6, line: 231, baseType: !76, size: 8, offset: 40)
+!128 = !DIDerivedType(tag: DW_TAG_member, name: "szAtrLen", scope: !123, file: !6, line: 233, baseType: !83, size: 64, offset: 48)
+!129 = !DIDerivedType(tag: DW_TAG_member, name: "abtAtr", scope: !123, file: !6, line: 234, baseType: !130, size: 264, offset: 112)
+!130 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 264, elements: !131)
+!131 = !{!132}
+!132 = !DISubrange(count: 33)
+!133 = !DIDerivedType(tag: DW_TAG_member, name: "nsi", scope: !68, file: !6, line: 273, baseType: !134, size: 64)
+!134 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b2sr_info", file: !6, line: 243, baseType: !135)
+!135 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 241, size: 64, elements: !136)
+!136 = !{!137}
+!137 = !DIDerivedType(tag: DW_TAG_member, name: "abtUID", scope: !135, file: !6, line: 242, baseType: !102, size: 64)
+!138 = !DIDerivedType(tag: DW_TAG_member, name: "nci", scope: !68, file: !6, line: 274, baseType: !139, size: 48)
+!139 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b2ct_info", file: !6, line: 253, baseType: !140)
+!140 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 249, size: 48, elements: !141)
+!141 = !{!142, !143, !144}
+!142 = !DIDerivedType(tag: DW_TAG_member, name: "abtUID", scope: !140, file: !6, line: 250, baseType: !112, size: 32)
+!143 = !DIDerivedType(tag: DW_TAG_member, name: "btProdCode", scope: !140, file: !6, line: 251, baseType: !76, size: 8, offset: 32)
+!144 = !DIDerivedType(tag: DW_TAG_member, name: "btFabCode", scope: !140, file: !6, line: 252, baseType: !76, size: 8, offset: 40)
+!145 = !DIDerivedType(tag: DW_TAG_member, name: "nji", scope: !68, file: !6, line: 275, baseType: !146, size: 48)
+!146 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_jewel_info", file: !6, line: 262, baseType: !147)
+!147 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 259, size: 48, elements: !148)
+!148 = !{!149, !150}
+!149 = !DIDerivedType(tag: DW_TAG_member, name: "btSensRes", scope: !147, file: !6, line: 260, baseType: !75, size: 16)
+!150 = !DIDerivedType(tag: DW_TAG_member, name: "btId", scope: !147, file: !6, line: 261, baseType: !112, size: 32, offset: 16)
+!151 = !DIDerivedType(tag: DW_TAG_member, name: "ndi", scope: !68, file: !6, line: 276, baseType: !152, size: 600)
+!152 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_dep_info", file: !6, line: 179, baseType: !153)
+!153 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 161, size: 600, elements: !154)
+!154 = !{!155, !156, !157, !158, !159, !160, !161, !165, !166}
+!155 = !DIDerivedType(tag: DW_TAG_member, name: "abtNFCID3", scope: !153, file: !6, line: 163, baseType: !87, size: 80)
+!156 = !DIDerivedType(tag: DW_TAG_member, name: "btDID", scope: !153, file: !6, line: 165, baseType: !76, size: 8, offset: 80)
+!157 = !DIDerivedType(tag: DW_TAG_member, name: "btBS", scope: !153, file: !6, line: 167, baseType: !76, size: 8, offset: 88)
+!158 = !DIDerivedType(tag: DW_TAG_member, name: "btBR", scope: !153, file: !6, line: 169, baseType: !76, size: 8, offset: 96)
+!159 = !DIDerivedType(tag: DW_TAG_member, name: "btTO", scope: !153, file: !6, line: 171, baseType: !76, size: 8, offset: 104)
+!160 = !DIDerivedType(tag: DW_TAG_member, name: "btPP", scope: !153, file: !6, line: 173, baseType: !76, size: 8, offset: 112)
+!161 = !DIDerivedType(tag: DW_TAG_member, name: "abtGB", scope: !153, file: !6, line: 175, baseType: !162, size: 384, offset: 120)
+!162 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 384, elements: !163)
+!163 = !{!164}
+!164 = !DISubrange(count: 48)
+!165 = !DIDerivedType(tag: DW_TAG_member, name: "szGB", scope: !153, file: !6, line: 176, baseType: !83, size: 64, offset: 504)
+!166 = !DIDerivedType(tag: DW_TAG_member, name: "ndm", scope: !153, file: !6, line: 178, baseType: !167, size: 32, offset: 568)
+!167 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_dep_mode", file: !6, line: 155, baseType: !5)
+!168 = !DIDerivedType(tag: DW_TAG_member, name: "nm", scope: !64, file: !6, line: 330, baseType: !169, size: 64, offset: 2264)
+!169 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_modulation", file: !6, line: 322, baseType: !170)
+!170 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !6, line: 319, size: 64, elements: !171)
+!171 = !{!172, !174}
+!172 = !DIDerivedType(tag: DW_TAG_member, name: "nmt", scope: !170, file: !6, line: 320, baseType: !173, size: 32)
+!173 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_modulation_type", file: !6, line: 304, baseType: !11)
+!174 = !DIDerivedType(tag: DW_TAG_member, name: "nbr", scope: !170, file: !6, line: 321, baseType: !175, size: 32, offset: 32)
+!175 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_baud_rate", file: !6, line: 289, baseType: !21)
+!176 = !DILocalVariable(name: "abtRx", scope: !51, file: !3, line: 75, type: !177)
+!177 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 2112, elements: !178)
+!178 = !{!179}
+!179 = !DISubrange(count: 264)
+!180 = !DILocalVariable(name: "abtTx", scope: !51, file: !3, line: 76, type: !181)
+!181 = !DICompositeType(tag: DW_TAG_array_type, baseType: !76, size: 104, elements: !182)
+!182 = !{!183}
+!183 = !DISubrange(count: 13)
+!184 = !DILocalVariable(name: "res", scope: !51, file: !3, line: 115, type: !54)
+!185 = !DIExpression()
+!186 = !DILocation(line: 72, column: 10, scope: !51)
+!187 = !DILocation(line: 72, column: 28, scope: !51)
+!188 = !DILocation(line: 74, column: 3, scope: !51)
+!189 = !DILocation(line: 75, column: 3, scope: !51)
+!190 = !DILocation(line: 75, column: 12, scope: !51)
+!191 = !DILocation(line: 76, column: 3, scope: !51)
+!192 = !DILocation(line: 76, column: 12, scope: !51)
+!193 = !DILocation(line: 78, column: 12, scope: !194)
+!194 = distinct !DILexicalBlock(scope: !51, file: !3, line: 78, column: 7)
+!195 = !DILocation(line: 78, column: 7, scope: !51)
+!196 = !DILocation(line: 79, column: 27, scope: !197)
+!197 = distinct !DILexicalBlock(scope: !194, file: !3, line: 78, column: 17)
+!198 = !{!199, !199, i64 0}
+!199 = !{!"any pointer", !200, i64 0}
+!200 = !{!"omnipotent char", !201, i64 0}
+!201 = !{!"Simple C/C++ TBAA"}
+!202 = !DILocation(line: 79, column: 5, scope: !197)
+!203 = !DILocation(line: 80, column: 5, scope: !197)
+!204 = !DILocation(line: 83, column: 3, scope: !51)
+!205 = !DILocation(line: 84, column: 7, scope: !206)
+!206 = distinct !DILexicalBlock(scope: !51, file: !3, line: 84, column: 7)
+!207 = !DILocation(line: 84, column: 15, scope: !206)
+!208 = !DILocation(line: 84, column: 7, scope: !51)
+!209 = !DILocation(line: 85, column: 5, scope: !210)
+!210 = distinct !DILexicalBlock(scope: !206, file: !3, line: 84, column: 24)
+!211 = !DILocation(line: 86, column: 5, scope: !210)
+!212 = !DILocation(line: 89, column: 9, scope: !51)
+!213 = !DILocation(line: 89, column: 7, scope: !51)
+!214 = !DILocation(line: 90, column: 11, scope: !215)
+!215 = distinct !DILexicalBlock(scope: !51, file: !3, line: 90, column: 7)
+!216 = !DILocation(line: 90, column: 7, scope: !51)
+!217 = !DILocation(line: 91, column: 5, scope: !218)
+!218 = distinct !DILexicalBlock(scope: !215, file: !3, line: 90, column: 20)
+!219 = !DILocation(line: 92, column: 14, scope: !218)
+!220 = !DILocation(line: 92, column: 5, scope: !218)
+!221 = !DILocation(line: 93, column: 5, scope: !218)
+!222 = !DILocation(line: 95, column: 37, scope: !51)
+!223 = !DILocation(line: 95, column: 3, scope: !51)
+!224 = !DILocation(line: 97, column: 3, scope: !51)
+!225 = !DILocation(line: 99, column: 26, scope: !226)
+!226 = distinct !DILexicalBlock(scope: !51, file: !3, line: 99, column: 7)
+!227 = !DILocation(line: 99, column: 7, scope: !226)
+!228 = !DILocation(line: 99, column: 31, scope: !226)
+!229 = !DILocation(line: 99, column: 7, scope: !51)
+!230 = !DILocation(line: 100, column: 5, scope: !231)
+!231 = distinct !DILexicalBlock(scope: !226, file: !3, line: 99, column: 36)
+!232 = !DILocation(line: 101, column: 15, scope: !231)
+!233 = !DILocation(line: 101, column: 5, scope: !231)
+!234 = !DILocation(line: 102, column: 14, scope: !231)
+!235 = !DILocation(line: 102, column: 5, scope: !231)
+!236 = !DILocation(line: 103, column: 5, scope: !231)
+!237 = !DILocation(line: 74, column: 14, scope: !51)
+!238 = !DILocation(line: 106, column: 7, scope: !239)
+!239 = distinct !DILexicalBlock(scope: !51, file: !3, line: 106, column: 7)
+!240 = !DILocation(line: 106, column: 83, scope: !239)
+!241 = !DILocation(line: 106, column: 7, scope: !51)
+!242 = !DILocation(line: 107, column: 16, scope: !243)
+!243 = distinct !DILexicalBlock(scope: !239, file: !3, line: 106, column: 88)
+!244 = !DILocation(line: 107, column: 5, scope: !243)
+!245 = !DILocation(line: 108, column: 15, scope: !243)
+!246 = !DILocation(line: 108, column: 5, scope: !243)
+!247 = !DILocation(line: 109, column: 14, scope: !243)
+!248 = !DILocation(line: 109, column: 5, scope: !243)
+!249 = !DILocation(line: 110, column: 5, scope: !243)
+!250 = !DILocation(line: 112, column: 3, scope: !51)
+!251 = !DILocation(line: 114, column: 3, scope: !51)
+!252 = !DILocation(line: 116, column: 45, scope: !253)
+!253 = distinct !DILexicalBlock(scope: !51, file: !3, line: 116, column: 7)
+!254 = !DILocation(line: 116, column: 14, scope: !253)
+!255 = !DILocation(line: 115, column: 7, scope: !51)
+!256 = !DILocation(line: 116, column: 98, scope: !253)
+!257 = !DILocation(line: 116, column: 7, scope: !51)
+!258 = !DILocation(line: 117, column: 16, scope: !259)
+!259 = distinct !DILexicalBlock(scope: !253, file: !3, line: 116, column: 103)
+!260 = !DILocation(line: 117, column: 5, scope: !259)
+!261 = !DILocation(line: 118, column: 15, scope: !259)
+!262 = !DILocation(line: 118, column: 5, scope: !259)
+!263 = !DILocation(line: 119, column: 14, scope: !259)
+!264 = !DILocation(line: 119, column: 5, scope: !259)
+!265 = !DILocation(line: 120, column: 5, scope: !259)
+!266 = !DILocation(line: 123, column: 3, scope: !51)
+!267 = !DILocation(line: 123, column: 14, scope: !51)
+!268 = !{!200, !200, i64 0}
+!269 = !DILocation(line: 124, column: 3, scope: !51)
+!270 = !DILocation(line: 126, column: 37, scope: !271)
+!271 = distinct !DILexicalBlock(scope: !51, file: !3, line: 126, column: 7)
+!272 = !DILocation(line: 126, column: 7, scope: !271)
+!273 = !DILocation(line: 126, column: 42, scope: !271)
+!274 = !DILocation(line: 126, column: 7, scope: !51)
+!275 = !DILocation(line: 127, column: 5, scope: !276)
+!276 = distinct !DILexicalBlock(scope: !271, file: !3, line: 126, column: 47)
+!277 = !DILocation(line: 128, column: 15, scope: !276)
+!278 = !DILocation(line: 128, column: 5, scope: !276)
+!279 = !DILocation(line: 129, column: 14, scope: !276)
+!280 = !DILocation(line: 129, column: 5, scope: !276)
+!281 = !DILocation(line: 130, column: 5, scope: !276)
+!282 = !DILocation(line: 133, column: 3, scope: !51)
+!283 = !DILocation(line: 134, column: 12, scope: !51)
+!284 = !DILocation(line: 134, column: 3, scope: !51)
+!285 = !DILocation(line: 135, column: 3, scope: !51)
+!286 = distinct !DISubprogram(name: "stop_dep_communication", scope: !3, file: !3, line: 60, type: !287, isLocal: true, isDefinition: true, scopeLine: 61, flags: DIFlagPrototyped, isOptimized: true, unit: !2, variables: !289)
+!287 = !DISubroutineType(types: !288)
+!288 = !{null, !54}
+!289 = !{!290}
+!290 = !DILocalVariable(name: "sig", arg: 1, scope: !286, file: !3, line: 60, type: !54)
+!291 = !DILocation(line: 60, column: 40, scope: !286)
+!292 = !DILocation(line: 63, column: 7, scope: !293)
+!293 = distinct !DILexicalBlock(scope: !286, file: !3, line: 63, column: 7)
+!294 = !DILocation(line: 63, column: 11, scope: !293)
+!295 = !DILocation(line: 63, column: 7, scope: !286)
+!296 = !DILocation(line: 64, column: 5, scope: !297)
+!297 = distinct !DILexicalBlock(scope: !293, file: !3, line: 63, column: 20)
+!298 = !DILocation(line: 69, column: 1, scope: !286)
+!299 = !DILocation(line: 66, column: 14, scope: !300)
+!300 = distinct !DILexicalBlock(scope: !293, file: !3, line: 65, column: 10)
+!301 = !DILocation(line: 66, column: 5, scope: !300)
+!302 = !DILocation(line: 67, column: 5, scope: !300)
+!303 = distinct !DISubprogram(name: "oddparity", scope: !40, file: !40, line: 46, type: !304, isLocal: false, isDefinition: true, scopeLine: 47, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !309)
+!304 = !DISubroutineType(types: !305)
+!305 = !{!306, !308}
+!306 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint8_t", file: !307, line: 48, baseType: !78)
+!307 = !DIFile(filename: "/usr/include/stdint.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/utils")
+!308 = !DIDerivedType(tag: DW_TAG_const_type, baseType: !306)
+!309 = !{!310}
+!310 = !DILocalVariable(name: "bt", arg: 1, scope: !303, file: !40, line: 46, type: !308)
+!311 = !DILocation(line: 46, column: 25, scope: !303)
+!312 = !DILocation(line: 49, column: 23, scope: !303)
+!313 = !DILocation(line: 49, column: 32, scope: !303)
+!314 = !DILocation(line: 49, column: 39, scope: !303)
+!315 = !DILocation(line: 49, column: 18, scope: !303)
+!316 = !DILocation(line: 49, column: 10, scope: !303)
+!317 = !DILocation(line: 49, column: 3, scope: !303)
+!318 = distinct !DISubprogram(name: "oddparity_bytes_ts", scope: !40, file: !40, line: 53, type: !319, isLocal: false, isDefinition: true, scopeLine: 54, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !326)
+!319 = !DISubroutineType(types: !320)
+!320 = !{null, !321, !322, !325}
+!321 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !308, size: 64)
+!322 = !DIDerivedType(tag: DW_TAG_const_type, baseType: !323)
+!323 = !DIDerivedType(tag: DW_TAG_typedef, name: "size_t", file: !324, line: 62, baseType: !85)
+!324 = !DIFile(filename: "/home/stly/Documents/llvm/llvm-build/lib/clang/5.0.0/include/stddef.h", directory: "/home/stly/Documents/ProtocolEx/stubs/libnfc-1.7.1/utils")
+!325 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !306, size: 64)
+!326 = !{!327, !328, !329, !330}
+!327 = !DILocalVariable(name: "pbtData", arg: 1, scope: !318, file: !40, line: 53, type: !321)
+!328 = !DILocalVariable(name: "szLen", arg: 2, scope: !318, file: !40, line: 53, type: !322)
+!329 = !DILocalVariable(name: "pbtPar", arg: 3, scope: !318, file: !40, line: 53, type: !325)
+!330 = !DILocalVariable(name: "szByteNr", scope: !318, file: !40, line: 55, type: !323)
+!331 = !DILocation(line: 53, column: 35, scope: !318)
+!332 = !DILocation(line: 53, column: 57, scope: !318)
+!333 = !DILocation(line: 53, column: 73, scope: !318)
+!334 = !DILocation(line: 55, column: 11, scope: !318)
+!335 = !DILocation(line: 57, column: 31, scope: !336)
+!336 = distinct !DILexicalBlock(scope: !337, file: !40, line: 57, column: 3)
+!337 = distinct !DILexicalBlock(scope: !318, file: !40, line: 57, column: 3)
+!338 = !DILocation(line: 57, column: 3, scope: !337)
+!339 = !DILocation(line: 57, column: 48, scope: !336)
+!340 = !DILocation(line: 58, column: 34, scope: !341)
+!341 = distinct !DILexicalBlock(scope: !336, file: !40, line: 57, column: 52)
+!342 = !{!343}
+!343 = distinct !{!343, !344}
+!344 = distinct !{!344, !"LVerDomain"}
+!345 = !DILocation(line: 49, column: 23, scope: !303, inlinedAt: !346)
+!346 = distinct !DILocation(line: 58, column: 24, scope: !341)
+!347 = !DILocation(line: 49, column: 32, scope: !303, inlinedAt: !346)
+!348 = !DILocation(line: 49, column: 39, scope: !303, inlinedAt: !346)
+!349 = !DILocation(line: 49, column: 18, scope: !303, inlinedAt: !346)
+!350 = !DILocation(line: 49, column: 10, scope: !303, inlinedAt: !346)
+!351 = !DILocation(line: 58, column: 5, scope: !341)
+!352 = !DILocation(line: 58, column: 22, scope: !341)
+!353 = !{!354}
+!354 = distinct !{!354, !344}
+!355 = distinct !{!355, !338, !356, !357, !358}
+!356 = !DILocation(line: 59, column: 3, scope: !337)
+!357 = !{!"llvm.loop.vectorize.width", i32 1}
+!358 = !{!"llvm.loop.interleave.count", i32 1}
+!359 = !DILocation(line: 46, column: 25, scope: !303, inlinedAt: !346)
+!360 = distinct !{!360, !338, !356, !357, !358}
+!361 = !DILocation(line: 60, column: 1, scope: !318)
+!362 = distinct !DISubprogram(name: "print_hex", scope: !40, file: !40, line: 63, type: !363, isLocal: false, isDefinition: true, scopeLine: 64, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !365)
+!363 = !DISubroutineType(types: !364)
+!364 = !{null, !321, !322}
+!365 = !{!366, !367, !368}
+!366 = !DILocalVariable(name: "pbtData", arg: 1, scope: !362, file: !40, line: 63, type: !321)
+!367 = !DILocalVariable(name: "szBytes", arg: 2, scope: !362, file: !40, line: 63, type: !322)
+!368 = !DILocalVariable(name: "szPos", scope: !362, file: !40, line: 65, type: !323)
+!369 = !DILocation(line: 63, column: 26, scope: !362)
+!370 = !DILocation(line: 63, column: 48, scope: !362)
+!371 = !DILocation(line: 65, column: 11, scope: !362)
+!372 = !DILocation(line: 67, column: 25, scope: !373)
+!373 = distinct !DILexicalBlock(scope: !374, file: !40, line: 67, column: 3)
+!374 = distinct !DILexicalBlock(scope: !362, file: !40, line: 67, column: 3)
+!375 = !DILocation(line: 67, column: 3, scope: !374)
+!376 = !DILocation(line: 68, column: 22, scope: !377)
+!377 = distinct !DILexicalBlock(scope: !373, file: !40, line: 67, column: 45)
+!378 = !DILocation(line: 68, column: 5, scope: !377)
+!379 = !DILocation(line: 67, column: 41, scope: !373)
+!380 = distinct !{!380, !375, !381}
+!381 = !DILocation(line: 69, column: 3, scope: !374)
+!382 = !DILocation(line: 70, column: 3, scope: !362)
+!383 = !DILocation(line: 71, column: 1, scope: !362)
+!384 = distinct !DISubprogram(name: "print_hex_bits", scope: !40, file: !40, line: 74, type: !363, isLocal: false, isDefinition: true, scopeLine: 75, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !385)
+!385 = !{!386, !387, !388, !389, !390}
+!386 = !DILocalVariable(name: "pbtData", arg: 1, scope: !384, file: !40, line: 74, type: !321)
+!387 = !DILocalVariable(name: "szBits", arg: 2, scope: !384, file: !40, line: 74, type: !322)
+!388 = !DILocalVariable(name: "uRemainder", scope: !384, file: !40, line: 76, type: !306)
+!389 = !DILocalVariable(name: "szPos", scope: !384, file: !40, line: 77, type: !323)
+!390 = !DILocalVariable(name: "szBytes", scope: !384, file: !40, line: 78, type: !323)
+!391 = !DILocation(line: 74, column: 31, scope: !384)
+!392 = !DILocation(line: 74, column: 53, scope: !384)
+!393 = !DILocation(line: 78, column: 28, scope: !384)
+!394 = !DILocation(line: 78, column: 11, scope: !384)
+!395 = !DILocation(line: 77, column: 11, scope: !384)
+!396 = !DILocation(line: 80, column: 25, scope: !397)
+!397 = distinct !DILexicalBlock(scope: !398, file: !40, line: 80, column: 3)
+!398 = distinct !DILexicalBlock(scope: !384, file: !40, line: 80, column: 3)
+!399 = !DILocation(line: 80, column: 3, scope: !398)
+!400 = !DILocation(line: 81, column: 22, scope: !401)
+!401 = distinct !DILexicalBlock(scope: !397, file: !40, line: 80, column: 45)
+!402 = !DILocation(line: 81, column: 5, scope: !401)
+!403 = !DILocation(line: 80, column: 41, scope: !397)
+!404 = distinct !{!404, !399, !405}
+!405 = !DILocation(line: 82, column: 3, scope: !398)
+!406 = !DILocation(line: 84, column: 16, scope: !384)
+!407 = !DILocation(line: 86, column: 18, scope: !408)
+!408 = distinct !DILexicalBlock(scope: !384, file: !40, line: 86, column: 7)
+!409 = !DILocation(line: 86, column: 7, scope: !384)
+!410 = !DILocation(line: 87, column: 20, scope: !411)
+!411 = distinct !DILexicalBlock(scope: !412, file: !40, line: 87, column: 9)
+!412 = distinct !DILexicalBlock(scope: !408, file: !40, line: 86, column: 24)
+!413 = !DILocation(line: 87, column: 9, scope: !412)
+!414 = !DILocation(line: 88, column: 7, scope: !411)
+!415 = !DILocation(line: 90, column: 7, scope: !411)
+!416 = !DILocation(line: 92, column: 3, scope: !384)
+!417 = !DILocation(line: 93, column: 1, scope: !384)
+!418 = distinct !DISubprogram(name: "print_hex_par", scope: !40, file: !40, line: 96, type: !419, isLocal: false, isDefinition: true, scopeLine: 97, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !421)
+!419 = !DISubroutineType(types: !420)
+!420 = !{null, !321, !322, !321}
+!421 = !{!422, !423, !424, !425, !426, !427}
+!422 = !DILocalVariable(name: "pbtData", arg: 1, scope: !418, file: !40, line: 96, type: !321)
+!423 = !DILocalVariable(name: "szBits", arg: 2, scope: !418, file: !40, line: 96, type: !322)
+!424 = !DILocalVariable(name: "pbtDataPar", arg: 3, scope: !418, file: !40, line: 96, type: !321)
+!425 = !DILocalVariable(name: "uRemainder", scope: !418, file: !40, line: 98, type: !306)
+!426 = !DILocalVariable(name: "szPos", scope: !418, file: !40, line: 99, type: !323)
+!427 = !DILocalVariable(name: "szBytes", scope: !418, file: !40, line: 100, type: !323)
+!428 = !DILocation(line: 96, column: 30, scope: !418)
+!429 = !DILocation(line: 96, column: 52, scope: !418)
+!430 = !DILocation(line: 96, column: 75, scope: !418)
+!431 = !DILocation(line: 100, column: 28, scope: !418)
+!432 = !DILocation(line: 100, column: 11, scope: !418)
+!433 = !DILocation(line: 99, column: 11, scope: !418)
+!434 = !DILocation(line: 102, column: 25, scope: !435)
+!435 = distinct !DILexicalBlock(scope: !436, file: !40, line: 102, column: 3)
+!436 = distinct !DILexicalBlock(scope: !418, file: !40, line: 102, column: 3)
+!437 = !DILocation(line: 102, column: 3, scope: !436)
+!438 = !DILocation(line: 103, column: 20, scope: !439)
+!439 = distinct !DILexicalBlock(scope: !435, file: !40, line: 102, column: 45)
+!440 = !DILocation(line: 103, column: 5, scope: !439)
+!441 = !DILocation(line: 104, column: 19, scope: !442)
+!442 = distinct !DILexicalBlock(scope: !439, file: !40, line: 104, column: 9)
+!443 = !DILocation(line: 46, column: 25, scope: !303, inlinedAt: !444)
+!444 = distinct !DILocation(line: 104, column: 9, scope: !442)
+!445 = !DILocation(line: 49, column: 23, scope: !303, inlinedAt: !444)
+!446 = !DILocation(line: 49, column: 32, scope: !303, inlinedAt: !444)
+!447 = !DILocation(line: 49, column: 39, scope: !303, inlinedAt: !444)
+!448 = !DILocation(line: 49, column: 18, scope: !303, inlinedAt: !444)
+!449 = !DILocation(line: 49, column: 10, scope: !303, inlinedAt: !444)
+!450 = !DILocation(line: 104, column: 38, scope: !442)
+!451 = !DILocation(line: 104, column: 35, scope: !442)
+!452 = !DILocation(line: 104, column: 9, scope: !439)
+!453 = !DILocation(line: 105, column: 7, scope: !454)
+!454 = distinct !DILexicalBlock(scope: !442, file: !40, line: 104, column: 57)
+!455 = !DILocation(line: 106, column: 5, scope: !454)
+!456 = !DILocation(line: 107, column: 7, scope: !457)
+!457 = distinct !DILexicalBlock(scope: !442, file: !40, line: 106, column: 12)
+!458 = !DILocation(line: 102, column: 41, scope: !435)
+!459 = distinct !{!459, !437, !460}
+!460 = !DILocation(line: 109, column: 3, scope: !436)
+!461 = !DILocation(line: 111, column: 16, scope: !418)
+!462 = !DILocation(line: 113, column: 18, scope: !463)
+!463 = distinct !DILexicalBlock(scope: !418, file: !40, line: 113, column: 7)
+!464 = !DILocation(line: 113, column: 7, scope: !418)
+!465 = !DILocation(line: 114, column: 20, scope: !466)
+!466 = distinct !DILexicalBlock(scope: !467, file: !40, line: 114, column: 9)
+!467 = distinct !DILexicalBlock(scope: !463, file: !40, line: 113, column: 24)
+!468 = !DILocation(line: 114, column: 9, scope: !467)
+!469 = !DILocation(line: 115, column: 7, scope: !466)
+!470 = !DILocation(line: 117, column: 7, scope: !466)
+!471 = !DILocation(line: 119, column: 3, scope: !418)
+!472 = !DILocation(line: 120, column: 1, scope: !418)
+!473 = distinct !DISubprogram(name: "print_nfc_target", scope: !40, file: !40, line: 123, type: !474, isLocal: false, isDefinition: true, scopeLine: 124, flags: DIFlagPrototyped, isOptimized: true, unit: !39, variables: !570)
+!474 = !DISubroutineType(types: !475)
+!475 = !{null, !476, !569}
+!476 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !477, size: 64)
+!477 = !DIDerivedType(tag: DW_TAG_const_type, baseType: !478)
+!478 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_target", file: !43, line: 331, baseType: !479)
+!479 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 328, size: 2328, elements: !480)
+!480 = !{!481, !561}
+!481 = !DIDerivedType(tag: DW_TAG_member, name: "nti", scope: !479, file: !43, line: 329, baseType: !482, size: 2264)
+!482 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_target_info", file: !43, line: 277, baseType: !483)
+!483 = distinct !DICompositeType(tag: DW_TAG_union_type, file: !43, line: 268, size: 2264, elements: !484)
+!484 = !{!485, !498, !508, !518, !528, !533, !540, !546}
+!485 = !DIDerivedType(tag: DW_TAG_member, name: "nai", scope: !483, file: !43, line: 269, baseType: !486, size: 2264)
+!486 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443a_info", file: !43, line: 192, baseType: !487)
+!487 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 185, size: 2264, elements: !488)
+!488 = !{!489, !491, !492, !493, !495, !496}
+!489 = !DIDerivedType(tag: DW_TAG_member, name: "abtAtqa", scope: !487, file: !43, line: 186, baseType: !490, size: 16)
+!490 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 16, elements: !79)
+!491 = !DIDerivedType(tag: DW_TAG_member, name: "btSak", scope: !487, file: !43, line: 187, baseType: !306, size: 8, offset: 16)
+!492 = !DIDerivedType(tag: DW_TAG_member, name: "szUidLen", scope: !487, file: !43, line: 188, baseType: !323, size: 64, offset: 24)
+!493 = !DIDerivedType(tag: DW_TAG_member, name: "abtUid", scope: !487, file: !43, line: 189, baseType: !494, size: 80, offset: 88)
+!494 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 80, elements: !88)
+!495 = !DIDerivedType(tag: DW_TAG_member, name: "szAtsLen", scope: !487, file: !43, line: 190, baseType: !323, size: 64, offset: 168)
+!496 = !DIDerivedType(tag: DW_TAG_member, name: "abtAts", scope: !487, file: !43, line: 191, baseType: !497, size: 2032, offset: 232)
+!497 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 2032, elements: !93)
+!498 = !DIDerivedType(tag: DW_TAG_member, name: "nfi", scope: !483, file: !43, line: 270, baseType: !499, size: 216)
+!499 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_felica_info", file: !43, line: 204, baseType: !500)
+!500 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 198, size: 216, elements: !501)
+!501 = !{!502, !503, !504, !506, !507}
+!502 = !DIDerivedType(tag: DW_TAG_member, name: "szLen", scope: !500, file: !43, line: 199, baseType: !323, size: 64)
+!503 = !DIDerivedType(tag: DW_TAG_member, name: "btResCode", scope: !500, file: !43, line: 200, baseType: !306, size: 8, offset: 64)
+!504 = !DIDerivedType(tag: DW_TAG_member, name: "abtId", scope: !500, file: !43, line: 201, baseType: !505, size: 64, offset: 72)
+!505 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 64, elements: !103)
+!506 = !DIDerivedType(tag: DW_TAG_member, name: "abtPad", scope: !500, file: !43, line: 202, baseType: !505, size: 64, offset: 136)
+!507 = !DIDerivedType(tag: DW_TAG_member, name: "abtSysCode", scope: !500, file: !43, line: 203, baseType: !490, size: 16, offset: 200)
+!508 = !DIDerivedType(tag: DW_TAG_member, name: "nbi", scope: !483, file: !43, line: 271, baseType: !509, size: 96)
+!509 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b_info", file: !43, line: 219, baseType: !510)
+!510 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 210, size: 96, elements: !511)
+!511 = !{!512, !514, !515, !517}
+!512 = !DIDerivedType(tag: DW_TAG_member, name: "abtPupi", scope: !510, file: !43, line: 212, baseType: !513, size: 32)
+!513 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 32, elements: !113)
+!514 = !DIDerivedType(tag: DW_TAG_member, name: "abtApplicationData", scope: !510, file: !43, line: 214, baseType: !513, size: 32, offset: 32)
+!515 = !DIDerivedType(tag: DW_TAG_member, name: "abtProtocolInfo", scope: !510, file: !43, line: 216, baseType: !516, size: 24, offset: 64)
+!516 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 24, elements: !118)
+!517 = !DIDerivedType(tag: DW_TAG_member, name: "ui8CardIdentifier", scope: !510, file: !43, line: 218, baseType: !306, size: 8, offset: 88)
+!518 = !DIDerivedType(tag: DW_TAG_member, name: "nii", scope: !483, file: !43, line: 272, baseType: !519, size: 376)
+!519 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443bi_info", file: !43, line: 235, baseType: !520)
+!520 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 225, size: 376, elements: !521)
+!521 = !{!522, !523, !524, !525, !526}
+!522 = !DIDerivedType(tag: DW_TAG_member, name: "abtDIV", scope: !520, file: !43, line: 227, baseType: !513, size: 32)
+!523 = !DIDerivedType(tag: DW_TAG_member, name: "btVerLog", scope: !520, file: !43, line: 229, baseType: !306, size: 8, offset: 32)
+!524 = !DIDerivedType(tag: DW_TAG_member, name: "btConfig", scope: !520, file: !43, line: 231, baseType: !306, size: 8, offset: 40)
+!525 = !DIDerivedType(tag: DW_TAG_member, name: "szAtrLen", scope: !520, file: !43, line: 233, baseType: !323, size: 64, offset: 48)
+!526 = !DIDerivedType(tag: DW_TAG_member, name: "abtAtr", scope: !520, file: !43, line: 234, baseType: !527, size: 264, offset: 112)
+!527 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 264, elements: !131)
+!528 = !DIDerivedType(tag: DW_TAG_member, name: "nsi", scope: !483, file: !43, line: 273, baseType: !529, size: 64)
+!529 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b2sr_info", file: !43, line: 243, baseType: !530)
+!530 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 241, size: 64, elements: !531)
+!531 = !{!532}
+!532 = !DIDerivedType(tag: DW_TAG_member, name: "abtUID", scope: !530, file: !43, line: 242, baseType: !505, size: 64)
+!533 = !DIDerivedType(tag: DW_TAG_member, name: "nci", scope: !483, file: !43, line: 274, baseType: !534, size: 48)
+!534 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_iso14443b2ct_info", file: !43, line: 253, baseType: !535)
+!535 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 249, size: 48, elements: !536)
+!536 = !{!537, !538, !539}
+!537 = !DIDerivedType(tag: DW_TAG_member, name: "abtUID", scope: !535, file: !43, line: 250, baseType: !513, size: 32)
+!538 = !DIDerivedType(tag: DW_TAG_member, name: "btProdCode", scope: !535, file: !43, line: 251, baseType: !306, size: 8, offset: 32)
+!539 = !DIDerivedType(tag: DW_TAG_member, name: "btFabCode", scope: !535, file: !43, line: 252, baseType: !306, size: 8, offset: 40)
+!540 = !DIDerivedType(tag: DW_TAG_member, name: "nji", scope: !483, file: !43, line: 275, baseType: !541, size: 48)
+!541 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_jewel_info", file: !43, line: 262, baseType: !542)
+!542 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 259, size: 48, elements: !543)
+!543 = !{!544, !545}
+!544 = !DIDerivedType(tag: DW_TAG_member, name: "btSensRes", scope: !542, file: !43, line: 260, baseType: !490, size: 16)
+!545 = !DIDerivedType(tag: DW_TAG_member, name: "btId", scope: !542, file: !43, line: 261, baseType: !513, size: 32, offset: 16)
+!546 = !DIDerivedType(tag: DW_TAG_member, name: "ndi", scope: !483, file: !43, line: 276, baseType: !547, size: 600)
+!547 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_dep_info", file: !43, line: 179, baseType: !548)
+!548 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 161, size: 600, elements: !549)
+!549 = !{!550, !551, !552, !553, !554, !555, !556, !558, !559}
+!550 = !DIDerivedType(tag: DW_TAG_member, name: "abtNFCID3", scope: !548, file: !43, line: 163, baseType: !494, size: 80)
+!551 = !DIDerivedType(tag: DW_TAG_member, name: "btDID", scope: !548, file: !43, line: 165, baseType: !306, size: 8, offset: 80)
+!552 = !DIDerivedType(tag: DW_TAG_member, name: "btBS", scope: !548, file: !43, line: 167, baseType: !306, size: 8, offset: 88)
+!553 = !DIDerivedType(tag: DW_TAG_member, name: "btBR", scope: !548, file: !43, line: 169, baseType: !306, size: 8, offset: 96)
+!554 = !DIDerivedType(tag: DW_TAG_member, name: "btTO", scope: !548, file: !43, line: 171, baseType: !306, size: 8, offset: 104)
+!555 = !DIDerivedType(tag: DW_TAG_member, name: "btPP", scope: !548, file: !43, line: 173, baseType: !306, size: 8, offset: 112)
+!556 = !DIDerivedType(tag: DW_TAG_member, name: "abtGB", scope: !548, file: !43, line: 175, baseType: !557, size: 384, offset: 120)
+!557 = !DICompositeType(tag: DW_TAG_array_type, baseType: !306, size: 384, elements: !163)
+!558 = !DIDerivedType(tag: DW_TAG_member, name: "szGB", scope: !548, file: !43, line: 176, baseType: !323, size: 64, offset: 504)
+!559 = !DIDerivedType(tag: DW_TAG_member, name: "ndm", scope: !548, file: !43, line: 178, baseType: !560, size: 32, offset: 568)
+!560 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_dep_mode", file: !43, line: 155, baseType: !42)
+!561 = !DIDerivedType(tag: DW_TAG_member, name: "nm", scope: !479, file: !43, line: 330, baseType: !562, size: 64, offset: 2264)
+!562 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_modulation", file: !43, line: 322, baseType: !563)
+!563 = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !43, line: 319, size: 64, elements: !564)
+!564 = !{!565, !567}
+!565 = !DIDerivedType(tag: DW_TAG_member, name: "nmt", scope: !563, file: !43, line: 320, baseType: !566, size: 32)
+!566 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_modulation_type", file: !43, line: 304, baseType: !44)
+!567 = !DIDerivedType(tag: DW_TAG_member, name: "nbr", scope: !563, file: !43, line: 321, baseType: !568, size: 32, offset: 32)
+!568 = !DIDerivedType(tag: DW_TAG_typedef, name: "nfc_baud_rate", file: !43, line: 289, baseType: !45)
+!569 = !DIBasicType(name: "_Bool", size: 8, encoding: DW_ATE_boolean)
+!570 = !{!571, !572, !573}
+!571 = !DILocalVariable(name: "pnt", arg: 1, scope: !473, file: !40, line: 123, type: !476)
+!572 = !DILocalVariable(name: "verbose", arg: 2, scope: !473, file: !40, line: 123, type: !569)
+!573 = !DILocalVariable(name: "s", scope: !473, file: !40, line: 125, type: !574)
+!574 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !58, size: 64)
+!575 = !DILocation(line: 123, column: 36, scope: !473)
+!576 = !DILocation(line: 123, column: 46, scope: !473)
+!577 = !DILocation(line: 125, column: 3, scope: !473)
+!578 = !DILocation(line: 125, column: 9, scope: !473)
+!579 = !DILocation(line: 126, column: 3, scope: !473)
+!580 = !DILocation(line: 127, column: 16, scope: !473)
+!581 = !DILocation(line: 127, column: 3, scope: !473)
+!582 = !DILocation(line: 128, column: 12, scope: !473)
+!583 = !DILocation(line: 128, column: 3, scope: !473)
+!584 = !DILocation(line: 129, column: 1, scope: !473)

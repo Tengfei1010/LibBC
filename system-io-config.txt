@@ -1,6 +1,16 @@
+ioctl
 recv
 recvfrom
 recvmsg
 read
+fread
 usb_bulk_read
 pn53x_TgInitAsTarget
+fgets
+SSL_read
+ssl3_get_record
+RECORD_LAYER_get_rrec
+RECORD_LAYER_get_rbuf
+ossl_statem_server_read_transition
+ossl_statem_client_read_transition
+_ZNK7openpal6RSlice6CopyToERNS_6WSliceE

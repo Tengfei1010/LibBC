@@ -1,3 +1,5 @@
+/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_tx_continuous/src/util_tx_continuous.c: 432
+/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/libloragw/src/loragw_lbt.c: 288
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/packet_forwarder-V4.0.1/lora_pkt_fwd/src/lora_pkt_fwd.c: 1497
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/packet_forwarder-V4.0.1/lora_pkt_fwd/src/lora_pkt_fwd.c: 2584
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/packet_forwarder-V4.0.1/lora_pkt_fwd/src/lora_pkt_fwd.c: 2720
@@ -6,11 +8,9 @@
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/packet_forwarder-V4.0.1/lora_pkt_fwd/src/parson.c: 1027
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/packet_forwarder-V4.0.1/lora_pkt_fwd/src/timersync.c: 97
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/libloragw/src/loragw_lbt.c: 288
-/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_tx_continuous/src/util_tx_continuous.c: 432
-/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/libloragw/src/loragw_lbt.c: 288
+/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_spectral_scan/src/util_spectral_scan.c: 347
+/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_spectral_scan/src/util_spectral_scan.c: 325
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_pkt_logger/src/parson.c: 592
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_pkt_logger/src/parson.c: 640
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_pkt_logger/src/parson.c: 1027
 /home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/libloragw/src/loragw_lbt.c: 288
-/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_spectral_scan/src/util_spectral_scan.c: 347
-/home/stly/Documents/ProtocolEx/stubs/Lora-net/lora_gateway/util_spectral_scan/src/util_spectral_scan.c: 325

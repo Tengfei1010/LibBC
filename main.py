@@ -8,9 +8,9 @@ from subprocess import call
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
-PASSLIB_HOME = '/home/tzt77/Develop/ProtocolEx/cmake-build-debug/lib'
+PASSLIB_HOME = '/home/stly/Documents/ProtocolEx/cmake-build-debug/lib'
 OUTPUT_PARAM = ' -strFileName '
-OPT_COMMAND = '/HDD/llvm5.0/install/bin/opt'
+OPT_COMMAND = '/home/stly/Documents/binutils-gdb/build/installed/bin/opt'
 
 PASS = {
     'sys-call-counter': PASSLIB_HOME + '/SysLibCounter/libSysLibCounterPass.so',
@@ -50,7 +50,7 @@ def count():
     paths = []
     file_dirnames = []
     new_file_names = []
-    for dirname, dirnames, filenames in os.walk('.'):
+    for dirname, dirnames, filenames in os.walk('./dnp3-2.0.x'):
         # print path to all filenames.
         for filename in filenames:
             if filename.endswith('.bc'):
@@ -84,7 +84,7 @@ def count():
 
 
 def clean():
-    for dirname, dirnames, filenames in os.walk('.'):
+    for dirname, dirnames, filenames in os.walk('./dnp3-2.0.x'):
         # print path to all filenames.
         for filename in filenames:
             if filename.endswith('.txt') and not ('config' in filename):
