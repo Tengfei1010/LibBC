@@ -8,9 +8,9 @@ from subprocess import call
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
-PASSLIB_HOME = '/home/stly/Documents/ProtocolEx/cmake-build-debug/lib'
+PASSLIB_HOME = '/home/tzt77/Develop/ProtocolEx/cmake-build-debug/lib'
 OUTPUT_PARAM = ' -strFileName '
-OPT_COMMAND = '/home/stly/Documents/binutils-gdb/build/installed/bin/opt'
+OPT_COMMAND = '/home/tzt77/Develop/binutils-gdb/build/installed/bin/opt'
 
 PASS = {
     'sys-call-counter': PASSLIB_HOME + '/SysLibCounter/libSysLibCounterPass.so',
@@ -50,7 +50,8 @@ def count():
     paths = []
     file_dirnames = []
     new_file_names = []
-    for dirname, dirnames, filenames in os.walk('./dnp3-2.0.x'):
+
+    for dirname, dirnames, filenames in os.walk('.'):
         # print path to all filenames.
         for filename in filenames:
             if filename.endswith('.bc'):
@@ -60,6 +61,9 @@ def count():
                     os.path.join(PATH, os.path.join(dirname[2:], filename)))
 
                 paths.append(os.path.join(os.path.join(PATH), dirname[2:]))
+
+    print("The Number of files to process is {}".format(len(paths) * len(PASS.items())))
+    finished = 0
 
     for index, _path in enumerate(all_bc_full_path):
         for _pass in PASS:
@@ -74,6 +78,8 @@ def count():
                 os.chmod('test.sh', st.st_mode | stat.S_IEXEC)
 
             call(['/bin/bash', 'test.sh'])
+            finished += 1
+            print("Have processed files {}".format(finished))
 
     # delete temp test.sh
     os.remove('test.sh')
@@ -84,7 +90,7 @@ def count():
 
 
 def clean():
-    for dirname, dirnames, filenames in os.walk('./dnp3-2.0.x'):
+    for dirname, dirnames, filenames in os.walk('.'):
         # print path to all filenames.
         for filename in filenames:
             if filename.endswith('.txt') and not ('config' in filename):
