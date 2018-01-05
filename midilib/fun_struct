@@ -1,0 +1,4 @@
+(midiFileCreate,struct._MIDI_FILE)
+(midiFileOpen,struct._MIDI_FILE)
+(midiReadGetNextMessage,struct.MIDI_MSG)
+(midiReadGetNextMessage,struct.MIDI_FILE_TRACK)
